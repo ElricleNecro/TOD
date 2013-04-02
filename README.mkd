@@ -1,0 +1,12 @@
+README
+======
+
+Project:
+--------
+
+With this project, **TOD**, we want to propose a program which will dispatch a list of command on a list of machine.
+
+First, the program will check if the machine is reachable.
+Secondly, for each reachable machine, it will launch the associated command.
+Thirsty, for each command it has not reach the associated machine, it will launch it on the first available machine.
+
