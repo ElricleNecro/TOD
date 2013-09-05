@@ -3,7 +3,9 @@
 package ssh
 
 import (
+	"bytes"
 	"code.google.com/p/go.crypto/ssh"
+	//"fmt"
 	"github.com/ElricleNecro/TOD/formatter"
 	"strconv"
 )
@@ -107,9 +109,38 @@ func (s *Session) AddSession() (*ssh.Session, error) {
 	session, err := s.Client.NewSession()
 
 	// append the session to the list
-	s.Session = append(s.Session, session)
+	if err != nil {
+		panic("Failed to create the session to the host !")
+	} else {
+		s.Session = append(s.Session, session)
+	}
 
 	// return the result
 	return session, err
+
+}
+
+// Run the command in argument using by default the last session
+// created for this connection
+func (s *Session) Run(command string) (string, error) {
+
+	// Create a bytes buffer and affect it as Stdout writer
+	// to return the output of the command
+	var b bytes.Buffer
+
+	// the number of sessions minus 1 at this time
+	nmax := len(s.Session) - 1
+
+	// get the good session
+	session := s.Session[nmax]
+
+	// Affect the output to the buffer
+	session.Stdout = &b
+
+	// run the command on the host
+	err := session.Run(command)
+
+	// return the output and the error if one present
+	return b.String(), err
 
 }
