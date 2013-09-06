@@ -1,6 +1,7 @@
 package formatter
 
 import (
+	"fmt"
 	"math"
 )
 
@@ -45,6 +46,9 @@ type Host struct {
 
 	// The list of commands to execute on the host
 	Commands []*Command
+
+	// Store here if the host is connected or not
+	IsConnected bool
 }
 
 // This function dispatches the commands on some hosts
@@ -57,7 +61,12 @@ func Dispatcher(
 	var host int
 
 	// Determine the number of hosts available in theory
-	nhosts := len(hosts)
+	nhosts := CountConnectedHosts(hosts)
+
+	// check there is at least one host connected
+	if nhosts == 0 {
+		fmt.Println("There is no hosts available to do the job !")
+	}
 
 	// The same for the number of commands to execute
 	ncomm := len(commands)
@@ -72,7 +81,15 @@ func Dispatcher(
 	for i, command := range commands {
 
 		// check if we need to pass to an other host with our repartition
-		if math.Mod(float64(i), float64(NCH)) == 0 {
+		if math.Mod(float64(i), NCH) == 0 {
+
+			host++
+		}
+
+		// if the host isn't connected
+		if !hosts[host].IsConnected {
+
+			// pass to the next host
 			host++
 		}
 
@@ -80,4 +97,26 @@ func Dispatcher(
 		hosts[host].Commands = append(hosts[host].Commands, command)
 	}
 
+}
+
+// This function counts the number of connected hosts given in
+// a slice of those objects.
+func CountConnectedHosts(hosts []*Host) int {
+
+	var counter int
+
+	// init the counter
+	counter = 0
+
+	// loop over host and increment a counter when connected
+	for _, host := range hosts {
+
+		// check the field for connected
+		if host.IsConnected {
+			counter++
+		}
+	}
+
+	// return the number of connected machines
+	return counter
 }

@@ -37,9 +37,10 @@ func TestDispatcher(t *testing.T) {
 
 		// Create the host object in the slice
 		hosts[i] = &Host{
-			Hostname: host,
-			Port:     22,
-			Protocol: "tcp",
+			Hostname:    host,
+			Port:        22,
+			Protocol:    "tcp",
+			IsConnected: true,
 		}
 	}
 	commands := make([]*Command, len(mycommands))
