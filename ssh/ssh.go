@@ -27,8 +27,6 @@ type Session struct {
 
 	// The host associated
 	Host *formatter.Host
-
-	// Define methods here
 }
 
 type clientPassword string
