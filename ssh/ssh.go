@@ -19,8 +19,9 @@ type Session struct {
 	// The structure of the client
 	Client *ssh.ClientConn
 
-	// The structure of the session
-	Session []*ssh.Session
+	// The structure of the session and their number
+	Session   []*ssh.Session
+	nsessions int
 
 	// The user associated
 	User *formatter.User
@@ -71,6 +72,9 @@ func New(
 		user,
 	)
 
+	// init the number of sessions
+	session.nsessions = 0
+
 	// return the session
 	return session
 
@@ -111,11 +115,22 @@ func (s *Session) AddSession() (*ssh.Session, error) {
 		panic("Failed to create the session to the host !")
 	} else {
 		s.Session = append(s.Session, session)
+		s.nsessions++
 	}
 
 	// return the result
 	return session, err
 
+}
+
+// Close the last session created in the list.
+func (s *Session) Close() error {
+
+	// Close the session
+	s.Session[s.nsessions-1].Close()
+
+	// return
+	return nil
 }
 
 // Run the command in argument using by default the last session
@@ -126,11 +141,8 @@ func (s *Session) Run(command string) (string, error) {
 	// to return the output of the command
 	var b bytes.Buffer
 
-	// the number of sessions minus 1 at this time
-	nmax := len(s.Session) - 1
-
 	// get the good session
-	session := s.Session[nmax]
+	session := s.Session[s.nsessions-1]
 
 	// Affect the output to the buffer
 	session.Stdout = &b

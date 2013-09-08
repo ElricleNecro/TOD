@@ -161,6 +161,9 @@ func TestRun(t *testing.T) {
 		t.FailNow()
 	}
 
+	// close the session we have opened
+	session.Close()
+
 	// display the result of the command
 	// TODO: add a assertion for the expected result after running this command
 	fmt.Println(output)
