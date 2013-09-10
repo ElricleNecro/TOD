@@ -8,9 +8,10 @@ import (
 // A type defining the user structure in the YAML file which we need
 // in argument.
 type MyHosts struct {
-	Port     int "port"
-	Priority int "priority"
-	Threads  int "threads"
+	Port     int    "port"
+	Priority int    "priority"
+	Threads  int    "threads"
+	Protocol string "protocol"
 }
 
 // The map type passed to the read YAML procedure to get multiple users
