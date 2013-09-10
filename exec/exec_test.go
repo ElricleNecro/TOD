@@ -11,9 +11,9 @@ func TestRunCommands(t *testing.T) {
 
 	// create an user
 	user := &formatter.User{
-		Name:     "duarte",
+		Name:     "",
 		Identity: 1,
-		Password: "SYmadu10;",
+		Password: "",
 	}
 
 	// A list of host

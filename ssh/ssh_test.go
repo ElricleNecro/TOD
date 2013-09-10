@@ -7,11 +7,11 @@ import (
 )
 
 var (
-	user      = "duarte"
+	user      = ""
 	myhost    = "carmenere"
 	port      = 22
 	protocol  = "tcp"
-	password  = "SYmadu10;"
+	password  = ""
 	id        = 1
 	mycommand = "/usr/bin/whoami"
 )
