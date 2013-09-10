@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/ElricleNecro/TOD/formatter"
+	_ "github.com/ElricleNecro/TOD/formatter"
 )
 
 // Main function :
