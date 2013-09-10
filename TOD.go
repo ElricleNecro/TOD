@@ -1,7 +1,7 @@
 package main
 
 import (
-	_ "github.com/ElricleNecro/TOD/formatter"
+	"github.com/ElricleNecro/TOD/runner"
 )
 
 // Main function :
@@ -9,6 +9,9 @@ import (
 //	Need to now if wait to all process to end or if it will detach the subprocess and quit?
 
 func main() {
+
+	// run the program
+	runner.Run()
 
 }
 
