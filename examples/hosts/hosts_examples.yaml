@@ -1,0 +1,6 @@
+vaccarese:
+    port: 22
+    priority: 1
+carmenere:
+    port: 22
+    priority: 1
