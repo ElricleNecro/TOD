@@ -2,6 +2,7 @@ package formatter
 
 import (
 	"fmt"
+	"github.com/ElricleNecro/TOD/configuration"
 	color "github.com/daviddengcn/go-colortext"
 	"math"
 )
@@ -163,4 +164,71 @@ func CountCommands(hosts []*Host) int {
 
 	// return the counter
 	return counter
+}
+
+// This function converts the dictionary of hosts to the structure needed
+// by the dispatcher.
+func HostsToDispatcher(hosts configuration.Hosts) []*Host {
+
+	// init the hosts for output
+	myhosts := make([]*Host, 0)
+
+	// loop over elements in the map
+	for hostname, fields := range hosts {
+
+		// new channel
+		channel := make(chan int)
+
+		// create a host object
+		host := &Host{
+			Hostname:    hostname,
+			Port:        fields.Port,
+			Protocol:    fields.Protocol,
+			IsConnected: true,
+			Waiter:      &channel,
+		}
+
+		// append to hosts
+		myhosts = append(myhosts, host)
+
+	}
+
+	return myhosts
+
+}
+
+// This function converts users structure from the configuration file into
+// the structure used by the dispatcher.
+func UsersToDispatcher(users configuration.Users) []*Command {
+
+	// init the command slice
+	commands := make([]*Command, 0)
+
+	// loop over users
+	for username, fields := range users {
+
+		// create an user structure
+		user := &User{
+			Name:     username,
+			Password: fields.Password,
+			Identity: 0,
+		}
+
+		// loop over commands
+		for _, command := range fields.Commands {
+
+			commands = append(
+				commands,
+				&Command{
+					Command: command,
+					User:    user,
+				},
+			)
+
+		}
+	}
+
+	// returns the list of commands
+	return commands
+
 }
