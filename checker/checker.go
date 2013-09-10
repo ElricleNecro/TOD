@@ -47,7 +47,7 @@ func IsConnected(host *formatter.Host) (bool, error) {
 
 	// create a dialer to contact the host
 	dial := net.Dialer{
-		Deadline: time.Now().Add(time.Duration(30) * time.Second),
+		Deadline: time.Now().Add(time.Duration(10) * time.Second),
 	}
 
 	// Contact the host and if no error, it is connected
