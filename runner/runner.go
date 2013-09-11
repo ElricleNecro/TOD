@@ -14,16 +14,26 @@ type Config struct {
 
 	// The file name for the hosts on which to execute commands
 	Hosts *string
+
+	// To read on stdin
+	Stdin *bool
 }
 
 // Execute the main program.
 func Run() {
 
+	// define the variable
+	var hosts_config *configuration.Hosts
+
 	// read the command line to get files names
 	data_config := ReadConfig()
 
 	// get data structure from files
-	hosts_config := configuration.ReadHostsYAML(*data_config.Hosts)
+	if !*data_config.Stdin {
+		hosts_config = configuration.ReadHostsYAML(*data_config.Hosts)
+	} else {
+		hosts_config = configuration.ReadHostsStdin()
+	}
 	users_config := configuration.ReadUsersYAML(*data_config.Users)
 
 	// convert those data to dispatcher data
@@ -61,6 +71,11 @@ func ReadConfig() *Config {
 		"hosts",
 		"",
 		"The path to the file where hosts are stored.",
+	)
+	data_config.Stdin = flag.Bool(
+		"stdin",
+		false,
+		"The list of hosts blank separated on which to run commands.",
 	)
 
 	// parse the command line
