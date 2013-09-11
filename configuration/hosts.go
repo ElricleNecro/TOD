@@ -3,6 +3,8 @@ package configuration
 import (
 	"io/ioutil"
 	"launchpad.net/goyaml"
+	"os"
+	"strings"
 )
 
 // A type defining the user structure in the YAML file which we need
@@ -17,6 +19,36 @@ type MyHosts struct {
 // The map type passed to the read YAML procedure to get multiple users
 // informations if we need.
 type Hosts map[string]MyHosts
+
+// A function to read hosts from the stdin.
+func ReadHostsStdin() *Hosts {
+
+	// create a standard host configuration
+	myhost := MyHosts{
+		Port:     22,
+		Priority: 1,
+		Threads:  1,
+		Protocol: "tcp",
+	}
+
+	// create the result
+	hosts := make(Hosts)
+
+	// get data from stdin
+	data, _ := ioutil.ReadAll(os.Stdin)
+
+	// Create a list of hosts
+	hostnames := []string(strings.Split(string(data), "\n"))
+
+	// loop over hosts and create the structure
+	for _, name := range hostnames {
+		hosts[name] = myhost
+	}
+
+	// return the hosts
+	return &hosts
+
+}
 
 // A function to read an hosts file in the YAML format and returns
 // a dictionary in the same format as the structured file.
