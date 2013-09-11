@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"code.google.com/p/go.crypto/ssh"
 	"github.com/ElricleNecro/TOD/formatter"
-	color "github.com/daviddengcn/go-colortext"
 	"strconv"
 )
 
@@ -112,7 +111,6 @@ func (s *Session) AddSession() (*ssh.Session, error) {
 
 	// append the session to the list
 	if err != nil {
-		color.ChangeColor(color.Red, false, color.None, false)
 		panic("Failed to create the session to the host !")
 	} else {
 		s.Session = append(s.Session, session)

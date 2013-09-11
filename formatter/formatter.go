@@ -7,6 +7,22 @@ import (
 	"math"
 )
 
+// A wrapping type for colors
+type Color color.Color
+
+// The types of colors
+const (
+	None    = color.None
+	Black   = color.Black
+	Red     = color.Red
+	Green   = color.Green
+	Yellow  = color.Yellow
+	Blue    = color.Blue
+	Magenta = color.Magenta
+	Cyan    = color.Cyan
+	White   = color.White
+)
+
 // The structure containing information for the connection as a given
 // user to a host.
 type User struct {
@@ -74,8 +90,11 @@ func Dispatcher(
 
 	// check there is at least one host connected
 	if nhosts == 0 {
-		color.ChangeColor(color.Red, true, color.None, false)
-		fmt.Println("There is no hosts available to do the job !")
+		ColoredPrintln(
+			Red,
+			true,
+			"There is no hosts available to do the job !",
+		)
 	}
 
 	// The same for the number of commands to execute
@@ -117,11 +136,14 @@ func Dispatcher(
 	if !first {
 
 		// loop over hosts which have more jobs
-		color.ChangeColor(color.None, true, color.None, false)
 		for _, host := range myhost {
 
 			// send a non blocking signal
-			fmt.Println("Send more jobs signal to " + hosts[host].Hostname)
+			ColoredPrintln(
+				None,
+				true,
+				"Send more jobs signal to ", hosts[host].Hostname,
+			)
 			select {
 			case *(hosts[host].Waiter) <- 1:
 			default:
@@ -237,4 +259,40 @@ func UsersToDispatcher(users configuration.Users) []*Command {
 	// returns the list of commands
 	return commands
 
+}
+
+// A simple function to print message with colors with line return.
+func ColoredPrintln(thecolor color.Color, bold bool, values ...interface{}) {
+
+	// change the color of the terminal
+	color.ChangeColor(
+		thecolor,
+		bold,
+		None,
+		false,
+	)
+
+	// print
+	fmt.Println(values...)
+
+	// reset the color
+	color.ResetColor()
+}
+
+// A simple function to print message with colors.
+func ColoredPrint(thecolor color.Color, bold bool, values ...interface{}) {
+
+	// change the color of the terminal
+	color.ChangeColor(
+		thecolor,
+		bold,
+		None,
+		false,
+	)
+
+	// print
+	fmt.Print(values...)
+
+	// reset the color
+	color.ResetColor()
 }

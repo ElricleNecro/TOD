@@ -1,12 +1,9 @@
 package exec
 
 import (
-	"fmt"
 	"github.com/ElricleNecro/TOD/checker"
 	"github.com/ElricleNecro/TOD/formatter"
 	"github.com/ElricleNecro/TOD/ssh"
-	color "github.com/daviddengcn/go-colortext"
-	"strconv"
 )
 
 // This function loop over hosts to launch commands in concurrent mode.
@@ -22,8 +19,11 @@ func RunCommands(hosts []*formatter.Host, ncommands int) {
 
 	// check that there is some hosts
 	if nhosts == 0 {
-		color.ChangeColor(color.Red, false, color.None, false)
-		fmt.Println("There is no hosts given to run commands !")
+		formatter.ColoredPrintln(
+			formatter.Red,
+			false,
+			"There is no hosts given to run commands !",
+		)
 	}
 
 	// A channel to wait for dispatching
@@ -39,16 +39,22 @@ func RunCommands(hosts []*formatter.Host, ncommands int) {
 		for {
 
 			// display
-			color.ChangeColor(color.Green, false, color.None, false)
-			fmt.Println("Waiting for a disconnected host !")
+			formatter.ColoredPrintln(
+				formatter.Green,
+				false,
+				"Waiting for a disconnected host !",
+			)
 
 			// wait for a signal from a disconnected host
 			host := <-disconnected
 
 			// display
-			color.ChangeColor(color.Green, false, color.None, false)
-			fmt.Println("Dispatch the jobs of " + host.Hostname +
-				" to other connected hosts !")
+			formatter.ColoredPrintln(
+				formatter.Green,
+				false,
+				"Dispatch the jobs of ", host.Hostname,
+				" to other connected hosts !",
+			)
 
 			// mark the host as not connected
 			host.IsConnected = false
@@ -61,8 +67,11 @@ func RunCommands(hosts []*formatter.Host, ncommands int) {
 			)
 
 			// display
-			color.ChangeColor(color.Green, false, color.None, false)
-			fmt.Println("Dispatching done for " + host.Hostname + " !")
+			formatter.ColoredPrintln(
+				formatter.Green,
+				false,
+				"Dispatching done for ", host.Hostname, " !",
+			)
 		}
 
 	}()
@@ -82,11 +91,12 @@ func RunCommands(hosts []*formatter.Host, ncommands int) {
 			if len(host.Commands) != 0 {
 
 				// display
-				color.ChangeColor(color.Blue, true, color.None, false)
-				fmt.Println(
+				formatter.ColoredPrintln(
+					formatter.Blue,
+					true,
 					"Executing ",
 					len(host.Commands),
-					" commands for "+host.Hostname,
+					" commands for ", host.Hostname,
 				)
 
 				// loop over commands on this hosts
@@ -100,15 +110,16 @@ func RunCommands(hosts []*formatter.Host, ncommands int) {
 						host.Commands[i].User,
 						host,
 					)
-					fmt.Println(host)
-					fmt.Println(host.Commands[i])
 
 					// check the host can be called
 					if is, err := checker.IsConnected(host); !is || (err != nil) {
 
 						// display
-						color.ChangeColor(color.Red, false, color.None, false)
-						fmt.Println("Can't connect to host " + host.Hostname)
+						formatter.ColoredPrintln(
+							formatter.Red,
+							false,
+							"Can't connect to host ", host.Hostname,
+						)
 
 						// dispatch remaining work to other hosts
 						select {
@@ -127,8 +138,11 @@ func RunCommands(hosts []*formatter.Host, ncommands int) {
 					if err != nil {
 
 						// display
-						color.ChangeColor(color.Red, false, color.None, false)
-						fmt.Println("Can't connect to host " + host.Hostname)
+						formatter.ColoredPrintln(
+							formatter.Red,
+							false,
+							"Can't connect to host ", host.Hostname,
+						)
 
 						// dispatch remaining work to other hosts
 						select {
@@ -145,8 +159,9 @@ func RunCommands(hosts []*formatter.Host, ncommands int) {
 					if err != nil {
 
 						// display
-						color.ChangeColor(color.Red, false, color.None, false)
-						fmt.Println(
+						formatter.ColoredPrintln(
+							formatter.Red,
+							false,
 							"Problem when adding a session to the host !",
 						)
 
@@ -161,23 +176,31 @@ func RunCommands(hosts []*formatter.Host, ncommands int) {
 					}
 
 					// execute the command on the host
-					color.ChangeColor(color.Green, false, color.None, false)
-					fmt.Println(
-						"Execute command on " + host.Hostname,
+					formatter.ColoredPrintln(
+						formatter.Green,
+						false,
+						"Execute command on ", host.Hostname,
 					)
 					output, err2 := session.Run(host.Commands[i].Command)
 					if err2 != nil {
 
 						// display
-						color.ChangeColor(color.Red, false, color.None, false)
-						fmt.Println(
-							"An error occurred during the execution " +
-								"of the command !",
+						formatter.ColoredPrintln(
+							formatter.Red,
+							false,
+							"An error occurred during the execution ",
+							"of the command !",
 						)
-						fmt.Println(
-							"The command was: " + host.Commands[i].Command,
+						formatter.ColoredPrintln(
+							formatter.Red,
+							false,
+							"The command was: ", host.Commands[i].Command,
 						)
-						fmt.Println("Error information: " + err.Error())
+						formatter.ColoredPrintln(
+							formatter.Red,
+							false,
+							"Error information: ", err.Error(),
+						)
 
 						// exit the loop
 						break loop
@@ -190,25 +213,37 @@ func RunCommands(hosts []*formatter.Host, ncommands int) {
 					session.Close()
 
 					// for now print the result of the command
-					color.ChangeColor(color.Magenta, false, color.None, false)
-					fmt.Println(output)
+					formatter.ColoredPrintln(
+						formatter.Magenta,
+						false,
+						output,
+					)
 
 					// wait here for new jobs
 					if i == len(host.Commands)-1 {
 
 						// display
-						color.ChangeColor(color.Magenta, true, color.None, false)
-						fmt.Println("Waiting more jobs for " + host.Hostname)
+						formatter.ColoredPrintln(
+							formatter.Magenta,
+							true,
+							"Waiting more jobs for ", host.Hostname,
+						)
 
 						// Now wait for new job
 						<-*(host.Waiter)
 
 						// display
-						color.ChangeColor(color.Magenta, true, color.None, false)
-						fmt.Println(host.Hostname + " has more jobs !")
-						color.ChangeColor(color.Green, true, color.None, false)
-						fmt.Println("Number of commands for " + host.Hostname + " :" +
-							strconv.Itoa(len(host.Commands)))
+						formatter.ColoredPrintln(
+							formatter.Magenta,
+							true,
+							host.Hostname+" has more jobs !",
+						)
+						formatter.ColoredPrintln(
+							formatter.Green,
+							true,
+							"Number of commands for ", host.Hostname, " :",
+							len(host.Commands),
+						)
 
 					}
 
