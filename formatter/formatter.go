@@ -115,11 +115,17 @@ func Dispatcher(
 
 	// message to say that the host has more jobs
 	if !first {
+
+		// loop over hosts which have more jobs
 		color.ChangeColor(color.None, true, color.None, false)
 		for _, host := range myhost {
+
+			// send a non blocking signal
 			fmt.Println("Send more jobs signal to " + hosts[host].Hostname)
-			fmt.Println(hosts[host].Waiter)
-			*(hosts[host].Waiter) <- 1
+			select {
+			case *(hosts[host].Waiter) <- 1:
+			default:
+			}
 		}
 	}
 
