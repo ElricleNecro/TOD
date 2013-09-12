@@ -21,14 +21,14 @@ type MyHosts struct {
 type Hosts map[string]MyHosts
 
 // A function to read hosts from the stdin.
-func ReadHostsStdin() *Hosts {
+func ReadHostsStdin(config *Config) *Hosts {
 
 	// create a standard host configuration
 	myhost := MyHosts{
-		Port:     22,
+		Port:     *config.Port,
 		Priority: 1,
 		Threads:  1,
-		Protocol: "tcp",
+		Protocol: *config.Protocol,
 	}
 
 	// create the result

@@ -28,7 +28,7 @@ func Checker(
 	for i, _ := range hosts {
 
 		go func(myhost *formatter.Host) {
-			res, err := IsConnected(myhost)
+			res, err := IsConnected(myhost, 10)
 			// check is connected
 			if err == nil && res {
 
@@ -56,12 +56,15 @@ func Checker(
 // Function which check that an host is connected or not by checking errors
 // when attempting to connect to it and by setting a timer for the connection
 // timeout if nothing is responding.
-func IsConnected(host *formatter.Host) (bool, error) {
+func IsConnected(
+	host *formatter.Host,
+	timeout int,
+) (bool, error) {
 
 	// create a dialer
 	dial := net.Dialer{
-		Deadline:  time.Now().Add(time.Duration(10) * time.Second),
-		Timeout:   time.Duration(10) * time.Second,
+		Deadline:  time.Now().Add(time.Duration(timeout) * time.Second),
+		Timeout:   time.Duration(timeout) * time.Second,
 		LocalAddr: nil,
 	}
 

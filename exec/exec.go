@@ -2,6 +2,7 @@ package exec
 
 import (
 	"github.com/ElricleNecro/TOD/checker"
+	"github.com/ElricleNecro/TOD/configuration"
 	"github.com/ElricleNecro/TOD/formatter"
 	"github.com/ElricleNecro/TOD/ssh"
 )
@@ -11,6 +12,7 @@ import (
 func RunOnHost(
 	hosts []*formatter.Host,
 	host *formatter.Host,
+	config *configuration.Config,
 	disconnected chan<- *formatter.Host,
 	ender chan<- bool,
 ) {
@@ -18,12 +20,6 @@ func RunOnHost(
 loop:
 	// Do an infinite loop for waiting when ended
 	for {
-
-		//formatter.ColoredPrintln(
-		//formatter.White,
-		//false,
-		//hosts,
-		//)
 
 		// check the size of commands to execute before
 		if len(host.Commands) != 0 {
@@ -49,8 +45,8 @@ loop:
 					host,
 				)
 
-				// chech the connection to the host
-				if is, err := checker.IsConnected(host); !is || (err != nil) {
+				// check the connection to the host
+				if is, err := checker.IsConnected(host, *config.Timeout); !is || (err != nil) {
 
 					// display
 					formatter.ColoredPrintln(
@@ -255,7 +251,11 @@ func Disconnection(
 }
 
 // This function loop over hosts to launch commands in concurrent mode.
-func RunCommands(hosts []*formatter.Host, ncommands int) {
+func RunCommands(
+	hosts []*formatter.Host,
+	ncommands int,
+	config *configuration.Config,
+) {
 
 	// number of hosts
 	nhosts := len(hosts)
@@ -288,6 +288,7 @@ func RunCommands(hosts []*formatter.Host, ncommands int) {
 		go RunOnHost(
 			hosts,
 			hosts[i],
+			config,
 			disconnected,
 			ender,
 		)

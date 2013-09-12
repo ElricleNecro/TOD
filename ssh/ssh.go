@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"code.google.com/p/go.crypto/ssh"
 	"github.com/ElricleNecro/TOD/formatter"
+	"net"
 	"strconv"
 )
 
@@ -88,7 +89,10 @@ func (s *Session) Connect() error {
 	// create a new client for dialing with the host
 	s.Client, err = ssh.Dial(
 		s.Host.Protocol,
-		s.Host.Hostname+":"+strconv.Itoa(s.Host.Port),
+		net.JoinHostPort(
+			s.Host.Hostname,
+			strconv.Itoa(s.Host.Port),
+		),
 		s.Config,
 	)
 
