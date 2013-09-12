@@ -1,6 +1,3 @@
-manuel:
-    password: "potiron"
-    commands: ["hostname"]
 perceval:
     password: "Sloubi"
     commands: ["Cépafo",C'estpasfaux!]
