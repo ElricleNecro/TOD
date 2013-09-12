@@ -24,18 +24,28 @@ func Checker(
 	nconn := 0
 
 	// loop over the hosts in argument and check they are connected
-	for _, host := range hosts {
+	conn := make(chan bool, len(hosts))
+	for i, _ := range hosts {
 
-		// check is connected
-		if res, err := IsConnected(host); err == nil && res {
+		go func(myhost *formatter.Host) {
+			res, err := IsConnected(myhost)
+			// check is connected
+			if err == nil && res {
 
-			// add the host to the list
-			connected[nconn] = host
+				// add the host to the list
+				connected[nconn] = myhost
 
-			// increment counter
-			nconn++
-		}
+				// increment counter
+				nconn++
+			}
 
+			conn <- true
+		}(hosts[i])
+
+	}
+
+	for i := 0; i < len(hosts); i++ {
+		<-conn
 	}
 
 	// return the list
@@ -43,19 +53,23 @@ func Checker(
 
 }
 
+// Function which check that an host is connected or not by checking errors
+// when attempting to connect to it and by setting a timer for the connection
+// timeout if nothing is responding.
 func IsConnected(host *formatter.Host) (bool, error) {
 
-	// create a dialer to contact the host
+	// create a dialer
 	dial := net.Dialer{
-		Deadline: time.Now().Add(time.Duration(10) * time.Second),
+		Deadline:  time.Now().Add(time.Duration(10) * time.Second),
+		Timeout:   time.Duration(10) * time.Second,
+		LocalAddr: nil,
 	}
 
 	// Contact the host and if no error, it is connected
 	_, err := dial.Dial(
 		host.Protocol,
-		host.Hostname+":"+strconv.Itoa(host.Port),
+		net.JoinHostPort(host.Hostname, strconv.Itoa(host.Port)),
 	)
 
-	// return the result
 	return err == nil, err
 }
