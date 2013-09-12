@@ -1,40 +1,48 @@
 package exec
 
 import (
-	"fmt"
 	"github.com/ElricleNecro/TOD/formatter"
-	color "github.com/daviddengcn/go-colortext"
 	"testing"
 )
 
-func TestRunCommands(t *testing.T) {
+var (
 
-	// create an user
-	user := &formatter.User{
-		Name:     "",
+	// User
+	user = &formatter.User{
+		Name:     "perceval",
 		Identity: 1,
-		Password: "",
+		Password: "sloubi",
 	}
 
 	// A list of host
-	hostnames := []string{
+	hostnames = []string{
 		"chasselas.iap.fr",
 		"vaccarese",
 		"carmenere",
-		"tokay",
+		"tressalier",
 		"null",
-		//"carmenere",
-		//"babel",
+		"tockay",
 	}
+)
+
+// To test the run of commands.
+func TestRunCommands(t *testing.T) {
 
 	// Create a command which will be duplicated
 	command := &formatter.Command{
 		Command: "/bin/hostname",
 		User:    user,
 	}
-	commands := make([]*formatter.Command, 20)
+	command2 := &formatter.Command{
+		Command: "whoami",
+		User:    user,
+	}
+	commands := make([]*formatter.Command, 25)
 	for i, _ := range commands {
 		commands[i] = command
+	}
+	for i := 12; i < 16; i++ {
+		commands[i] = command2
 	}
 
 	// Create the list of commands and hosts
@@ -53,13 +61,10 @@ func TestRunCommands(t *testing.T) {
 			Waiter:      &channel,
 		}
 
-		fmt.Println(host)
-		fmt.Println(hosts[i].Waiter)
 	}
 
 	// display
-	color.ChangeColor(color.Blue, false, color.None, false)
-	fmt.Println("All data initialized !")
+	formatter.ColoredPrintln(formatter.Blue, false, "All data initialized !")
 
 	// Dispatch commands on hosts
 	formatter.Dispatcher(
@@ -69,14 +74,16 @@ func TestRunCommands(t *testing.T) {
 	)
 
 	// display
-	color.ChangeColor(color.Blue, false, color.None, false)
-	fmt.Println("Dispatching the commands on hosts done !")
+	formatter.ColoredPrintln(
+		formatter.Blue,
+		false,
+		"Dispatching the commands on hosts done !",
+	)
 
 	// Run commands in concurrent
 	RunCommands(hosts, len(commands))
 
 	// display
-	color.ChangeColor(color.Blue, false, color.None, false)
-	fmt.Println("Commands done !")
+	formatter.ColoredPrintln(formatter.Blue, false, "Commands done !")
 
 }
