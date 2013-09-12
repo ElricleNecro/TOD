@@ -38,7 +38,7 @@ func ReadHostsStdin() *Hosts {
 	data, _ := ioutil.ReadAll(os.Stdin)
 
 	// Create a list of hosts
-	hostnames := []string(strings.Split(string(data), "\n"))
+	hostnames := []string(strings.Split(strings.TrimSpace(string(data)), "|"))
 
 	// loop over hosts and create the structure
 	for _, name := range hostnames {
