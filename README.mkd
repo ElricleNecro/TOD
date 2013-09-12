@@ -10,3 +10,71 @@ First, the program will check if the machine is reachable.
 Secondly, for each reachable machine, it will launch the associated command.
 Thirsty, for each command it has not reach the associated machine, it will launch it on the first available machine.
 
+Principle:
+----------
+This program allows to dispatch many commands into a given set of hosts, allowing
+to use the advantage of big networks of hosts to run easily multiple programs
+on them.
+
+Given a list of users (name,password) and their associated commands (because some
+commands just can be used by a given user), the program dispatch those commands
+on the given list of hosts in an equitable way. So no hosts is too loaded by
+jobs than an other. The program checks if the host in the list is available to
+run a command on it. If not, all the remaining charge of commands of this host
+is dispatched to the other hosts which are connected(available). **TOD** ends only
+when all commands to be executed are done.
+
+Usage:
+------
+
+After the installation, you can simply run:
+
+```
+$ TOD -users <user_file> -hosts <hosts_file>
+```
+
+to get a first idea of the dispatch.
+
+In case of lists of hosts in the standard input, you must pass the -stdin option
+and the list of hosts in STDIN must be in the format:
+```
+alpha|beta|delta
+```
+
+Options:
+--------
+You can set some default parameters on the command line:
+
+```
+-port : the default port number on which the hosts are listening for a SSH connection.
+-protocol : the default protocol used by hosts ("tcp","udp","tcp4"...)
+-timeout: the time in seconds after which the host is disconnected.
+```
+
+Users file:
+-----------
+
+The structure of the user file is in YAML format.
+For example to run commands on hosts as user PERCEVAL:
+```
+PERCEVAL:
+    password: sloubi
+    commands: [ hostname, whoami ]
+```
+For multiple users, chained this type of block.
+
+Hosts file:
+-----------
+
+The structure of the host file is in YAML format.
+For example for some machine and their specific caracteristics:
+```
+alpha:
+    port: 765
+    protocol: udp
+beta:
+    protocol: tcp4
+    priority: 1
+delta:
+    threads: 2
+```
