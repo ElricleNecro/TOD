@@ -251,6 +251,9 @@ func Disconnection(
 			false,
 		)
 
+		// Set the commands to nothing for the sorter of the dispatcher
+		host.Commands = make([]*formatter.Command, 0)
+
 		// display
 		formatter.ColoredPrintln(
 			formatter.Green,
