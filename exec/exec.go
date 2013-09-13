@@ -142,8 +142,19 @@ loop:
 					formatter.ColoredPrintln(
 						formatter.Red,
 						false,
-						"Error information: ", err.Error(),
+						"and the host is: ", host.Hostname,
 					)
+					formatter.ColoredPrintln(
+						formatter.Red,
+						false,
+						"Error information: ", err2.Error(),
+					)
+
+					// dispatch remaining work to other hosts
+					select {
+					case disconnected <- host:
+					default:
+					}
 
 					// exit the loop
 					break loop
