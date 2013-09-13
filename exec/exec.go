@@ -46,7 +46,7 @@ loop:
 				)
 
 				// check the connection to the host
-				if is, err := checker.IsConnected(host, *config.Timeout); !is || (err != nil) {
+				if is, err := checker.IsConnected(host, config.Timeout); !is || (err != nil) {
 
 					// display
 					formatter.ColoredPrintln(

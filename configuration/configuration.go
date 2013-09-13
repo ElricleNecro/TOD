@@ -8,22 +8,22 @@ import (
 type Config struct {
 
 	// The file name for the users and associated commands
-	Users *string
+	Users string
 
 	// The file name for the hosts on which to execute commands
-	Hosts *string
+	Hosts string
 
 	// To read on stdin
-	Stdin *bool
+	Stdin bool
 
 	// The default protocol for hosts
-	Protocol *string
+	Protocol string
 
 	// The default port on hosts
-	Port *int
+	Port int
 
 	// The timeout in seconds for the disconnection
-	Timeout *int
+	Timeout int
 }
 
 // A function to get the data from the command line
@@ -34,32 +34,38 @@ func ReadConfig() *Config {
 	data_config := &Config{}
 
 	// define flag to use in the command line
-	data_config.Users = flag.String(
+	flag.StringVar(
+		&data_config.Users,
 		"users",
 		"",
 		"The path to the file where users and associated commands are stored.",
 	)
-	data_config.Hosts = flag.String(
+	flag.StringVar(
+		&data_config.Hosts,
 		"hosts",
 		"",
 		"The path to the file where hosts are stored.",
 	)
-	data_config.Stdin = flag.Bool(
+	flag.BoolVar(
+		&data_config.Stdin,
 		"stdin",
 		false,
 		"The list of hosts blank separated on which to run commands.",
 	)
-	data_config.Protocol = flag.String(
+	flag.StringVar(
+		&data_config.Protocol,
 		"protocol",
 		"tcp",
 		"The protocol used by default by hosts to communicate.",
 	)
-	data_config.Port = flag.Int(
+	flag.IntVar(
+		&data_config.Port,
 		"port",
 		22,
 		"The port used by default by hosts to listen for SSH connection.",
 	)
-	data_config.Timeout = flag.Int(
+	flag.IntVar(
+		&data_config.Timeout,
 		"timeout",
 		10,
 		"The default time out in second to wait before to say that the host"+
