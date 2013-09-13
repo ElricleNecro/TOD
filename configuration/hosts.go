@@ -25,10 +25,10 @@ func ReadHostsStdin(config *Config) *Hosts {
 
 	// create a standard host configuration
 	myhost := MyHosts{
-		Port:     *config.Port,
+		Port:     config.Port,
 		Priority: 1,
 		Threads:  1,
-		Protocol: *config.Protocol,
+		Protocol: config.Protocol,
 	}
 
 	// create the result

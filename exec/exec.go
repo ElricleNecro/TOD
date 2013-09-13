@@ -46,7 +46,7 @@ loop:
 				)
 
 				// check the connection to the host
-				if is, err := checker.IsConnected(host, *config.Timeout); !is || (err != nil) {
+				if is, err := checker.IsConnected(host, config.Timeout); !is || (err != nil) {
 
 					// display
 					formatter.ColoredPrintln(
@@ -142,8 +142,19 @@ loop:
 					formatter.ColoredPrintln(
 						formatter.Red,
 						false,
-						"Error information: ", err.Error(),
+						"and the host is: ", host.Hostname,
 					)
+					formatter.ColoredPrintln(
+						formatter.Red,
+						false,
+						"Error information: ", err2.Error(),
+					)
+
+					// dispatch remaining work to other hosts
+					select {
+					case disconnected <- host:
+					default:
+					}
 
 					// exit the loop
 					break loop
@@ -239,6 +250,9 @@ func Disconnection(
 			hosts,
 			false,
 		)
+
+		// Set the commands to nothing for the sorter of the dispatcher
+		host.Commands = make([]*formatter.Command, 0)
 
 		// display
 		formatter.ColoredPrintln(

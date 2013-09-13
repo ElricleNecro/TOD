@@ -5,6 +5,7 @@ import (
 	"github.com/ElricleNecro/TOD/configuration"
 	color "github.com/daviddengcn/go-colortext"
 	"math"
+	"sort"
 )
 
 // A wrapping type for colors
@@ -75,6 +76,30 @@ type Host struct {
 	Waiter *(chan int)
 }
 
+// A type used to sort the hosts by their charge in term of number of commands
+// to execute. The goal is to allow less loaded hosts to run the dispatched
+// commands first, so that a bigger number of commands is executed in a given
+// laps of time.
+type hostSorter struct {
+	Hosts []*Host
+	by    func(h1, h2 *Host) bool
+}
+
+// Return the length of the array to sort
+func (h *hostSorter) Len() int {
+	return len(h.Hosts)
+}
+
+// Swap two hosts
+func (h *hostSorter) Swap(i, j int) {
+	h.Hosts[i], h.Hosts[j] = h.Hosts[j], h.Hosts[i]
+}
+
+// The function to compare two hosts
+func (h *hostSorter) Less(i, j int) bool {
+	return len(h.Hosts[i].Commands) < len(h.Hosts[j].Commands)
+}
+
 // This function dispatches the commands on some hosts
 func Dispatcher(
 	commands []*Command,
@@ -108,6 +133,14 @@ func Dispatcher(
 
 	// store here the list of selected hosts
 	myhost := make([]int, 0)
+
+	// create the sorter
+	sorter := &hostSorter{
+		Hosts: hosts,
+	}
+
+	// Now sort by charge in commands
+	sort.Sort(sorter)
 
 	// loop over commands and affect them to hosts
 	for i, command := range commands {
