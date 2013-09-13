@@ -1,18 +1,12 @@
 package exec
 
 import (
+	config "github.com/ElricleNecro/TOD/configuration"
 	"github.com/ElricleNecro/TOD/formatter"
 	"testing"
 )
 
 var (
-
-	// User
-	user = &formatter.User{
-		Name:     "perceval",
-		Identity: 1,
-		Password: "sloubi",
-	}
 
 	// A list of host
 	hostnames = []string{
@@ -22,11 +16,32 @@ var (
 		"tressalier",
 		"null",
 		"tockay",
+		"bidule",
+		"toké",
 	}
 )
 
 // To test the run of commands.
 func TestRunCommands(t *testing.T) {
+
+	var user *formatter.User
+
+	// Read the user structure from the test file
+	users := config.ReadUsersYAML("/home/manuel/CONFIG/TOD/users/users.yaml")
+	for myuser, fields := range *users {
+
+		user = &formatter.User{
+			Name:     myuser,
+			Identity: 1,
+			Password: fields.Password,
+		}
+	}
+
+	// configuration
+	conf := &config.Config{}
+	conf.Port = 22
+	conf.Protocol = "tcp"
+	conf.Timeout = 10
 
 	// Create a command which will be duplicated
 	command := &formatter.Command{
@@ -81,7 +96,7 @@ func TestRunCommands(t *testing.T) {
 	)
 
 	// Run commands in concurrent
-	RunCommands(hosts, len(commands))
+	RunCommands(hosts, len(commands), conf)
 
 	// display
 	formatter.ColoredPrintln(formatter.Blue, false, "Commands done !")
