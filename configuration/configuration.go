@@ -24,6 +24,9 @@ type Config struct {
 
 	// The timeout in seconds for the disconnection
 	Timeout int
+
+	// To set or not the timer for displaying remaining commands
+	Timer bool
 }
 
 // A function to get the data from the command line
@@ -51,6 +54,13 @@ func ReadConfig() *Config {
 		"stdin",
 		false,
 		"The list of hosts blank separated on which to run commands.",
+	)
+	flag.BoolVar(
+		&data_config.Timer,
+		"stdin",
+		false,
+		"If set, a timer will be launched to display the number of"+
+			" remaining commands.",
 	)
 	flag.StringVar(
 		&data_config.Protocol,
