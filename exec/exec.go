@@ -5,6 +5,7 @@ import (
 	"github.com/ElricleNecro/TOD/configuration"
 	"github.com/ElricleNecro/TOD/formatter"
 	"github.com/ElricleNecro/TOD/ssh"
+	"time"
 )
 
 // This function is used to run a command on a host
@@ -264,6 +265,59 @@ func Disconnection(
 
 }
 
+// This function sets a timer and check the remaining number of commands
+// to execute.
+func RemainingCommands(
+	hosts []*formatter.Host,
+	ncommands int,
+) {
+
+	// set a timer
+	timer := time.NewTimer(time.Duration(180) * time.Second)
+
+	// start an infinite loop
+	for {
+
+		// Wait for the timer
+		<-timer.C
+
+		// counter
+		counter := 0
+
+		// loop over hosts
+		for _, host := range hosts {
+
+			// check that it is connected
+			if host.IsConnected {
+
+				// increment counter
+				counter += len(host.Commands)
+			}
+		}
+
+		// display the result
+		formatter.ColoredPrintln(
+			formatter.Magenta,
+			false,
+			"Number of commands remaining :",
+			counter,
+			"/",
+			ncommands,
+		)
+
+		// get the current time
+		hour, minute, second := time.Now().Clock()
+		formatter.ColoredPrintln(
+			formatter.Magenta,
+			false,
+			"at time ",
+			hour, ":",
+			minute, ":",
+			second,
+		)
+	}
+}
+
 // This function loop over hosts to launch commands in concurrent mode.
 func RunCommands(
 	hosts []*formatter.Host,
@@ -294,6 +348,14 @@ func RunCommands(
 		hosts,
 		disconnected,
 	)
+
+	// if we use the timer, run the go routine
+	if config.Timer {
+		RemainingCommands(
+			hosts,
+			ncommands,
+		)
+	}
 
 	// loop over hosts and run the command
 	for i, _ := range hosts {
