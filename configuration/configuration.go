@@ -30,6 +30,9 @@ type Config struct {
 
 	// The path to the log for commands output
 	LogCommand string
+
+	// To display or not commands output.
+	NoResults bool
 }
 
 // A function to get the data from the command line
@@ -89,6 +92,12 @@ func ReadConfig() *Config {
 		"log_command",
 		"/tmp",
 		"The path to the directory for log of commands output.",
+	)
+	flag.BoolVar(
+		&data_config.NoResults,
+		"no_results",
+		false,
+		"Set it if you don't want to display the result of commands.",
 	)
 
 	// parse the command line
