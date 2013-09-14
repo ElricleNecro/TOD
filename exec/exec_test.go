@@ -3,6 +3,7 @@ package exec
 import (
 	config "github.com/ElricleNecro/TOD/configuration"
 	"github.com/ElricleNecro/TOD/formatter"
+	myusr "os/user"
 	"testing"
 )
 
@@ -18,6 +19,10 @@ var (
 		"tockay",
 		"bidule",
 		"toké",
+		"poulsard",
+		"arbois",
+		"machin",
+		"ugni",
 	}
 )
 
@@ -27,7 +32,8 @@ func TestRunCommands(t *testing.T) {
 	var user *formatter.User
 
 	// Read the user structure from the test file
-	users := config.ReadUsersYAML("/home/manuel/CONFIG/TOD/users/users.yaml")
+	usr, _ := myusr.Current()
+	users := config.ReadUsersYAML(usr.HomeDir + "/CONFIG/TOD/users/users.yaml")
 	for myuser, fields := range *users {
 
 		user = &formatter.User{
@@ -45,19 +51,12 @@ func TestRunCommands(t *testing.T) {
 
 	// Create a command which will be duplicated
 	command := &formatter.Command{
-		Command: "/bin/hostname",
+		Command: "sleep $(( RANDOM % 10 )) && /bin/hostname",
 		User:    user,
 	}
-	command2 := &formatter.Command{
-		Command: "whoami",
-		User:    user,
-	}
-	commands := make([]*formatter.Command, 25)
+	commands := make([]*formatter.Command, 100)
 	for i, _ := range commands {
 		commands[i] = command
-	}
-	for i := 12; i < 16; i++ {
-		commands[i] = command2
 	}
 
 	// Create the list of commands and hosts
