@@ -5,6 +5,7 @@ import (
 	"github.com/ElricleNecro/TOD/configuration"
 	"github.com/ElricleNecro/TOD/formatter"
 	"github.com/ElricleNecro/TOD/ssh"
+	"strconv"
 	"time"
 )
 
@@ -29,9 +30,9 @@ loop:
 			formatter.ColoredPrintln(
 				formatter.Blue,
 				true,
-				"Executing ",
+				"Executing",
 				len(host.Commands),
-				" commands for ", host.Hostname,
+				"commands for", host.Hostname,
 			)
 
 			// loop over commands on this hosts
@@ -49,18 +50,12 @@ loop:
 				// check the connection to the host
 				if is, err := checker.IsConnected(host, config.Timeout); !is || (err != nil) {
 
-					// display
-					formatter.ColoredPrintln(
-						formatter.Red,
-						false,
-						"Can't connect to host ", host.Hostname,
+					// disconnect
+					Disconnecter(
+						"Can't connect to host "+host.Hostname,
+						host,
+						disconnected,
 					)
-
-					// dispatch remaining work to other hosts
-					select {
-					case disconnected <- host:
-					default:
-					}
 
 					// exit the loop
 					break loop
@@ -70,9 +65,9 @@ loop:
 				formatter.ColoredPrintln(
 					formatter.Green,
 					false,
-					"Host ",
+					"Host",
 					host.Hostname,
-					" seems to be online!",
+					"seems to be online!",
 				)
 
 				// Attempt a connection to the host
@@ -81,18 +76,12 @@ loop:
 				// check the host can be called
 				if err != nil {
 
-					// display
-					formatter.ColoredPrintln(
-						formatter.Red,
-						false,
-						"Can't connect to host ", host.Hostname,
+					// disconnect
+					Disconnecter(
+						"Can't connect to host "+host.Hostname,
+						host,
+						disconnected,
 					)
-
-					// dispatch remaining work to other hosts
-					select {
-					case disconnected <- host:
-					default:
-					}
 
 					// exit the loop
 					break loop
@@ -102,18 +91,12 @@ loop:
 				_, err = session.AddSession()
 				if err != nil {
 
-					// display
-					formatter.ColoredPrintln(
-						formatter.Red,
-						false,
+					// disconnect
+					Disconnecter(
 						"Problem when adding a session to the host !",
+						host,
+						disconnected,
 					)
-
-					// dispatch remaining work to other hosts
-					select {
-					case disconnected <- host:
-					default:
-					}
 
 					// exit the loop
 					break loop
@@ -123,39 +106,20 @@ loop:
 				formatter.ColoredPrintln(
 					formatter.Green,
 					false,
-					"Execute command on ", host.Hostname,
+					"Execute command on", host.Hostname,
 				)
 				output, err2 := session.Run(host.Commands[i].Command)
 				if err2 != nil {
 
-					// display
-					formatter.ColoredPrintln(
-						formatter.Red,
-						false,
-						"An error occurred during the execution ",
-						"of the command !",
+					// disconnect
+					Disconnecter(
+						"An error occurred during the execution of the command !\n"+
+							"The command was: "+host.Commands[i].Command+
+							"and the host is: "+host.Hostname+
+							"\nError information: "+err2.Error(),
+						host,
+						disconnected,
 					)
-					formatter.ColoredPrintln(
-						formatter.Red,
-						false,
-						"The command was: ", host.Commands[i].Command,
-					)
-					formatter.ColoredPrintln(
-						formatter.Red,
-						false,
-						"and the host is: ", host.Hostname,
-					)
-					formatter.ColoredPrintln(
-						formatter.Red,
-						false,
-						"Error information: ", err2.Error(),
-					)
-
-					// dispatch remaining work to other hosts
-					select {
-					case disconnected <- host:
-					default:
-					}
 
 					// exit the loop
 					break loop
@@ -181,7 +145,7 @@ loop:
 					formatter.ColoredPrintln(
 						formatter.Magenta,
 						true,
-						"Waiting more jobs for ", host.Hostname,
+						"Waiting more jobs for", host.Hostname,
 					)
 
 					// Now wait for new job
@@ -191,12 +155,12 @@ loop:
 					formatter.ColoredPrintln(
 						formatter.Magenta,
 						true,
-						host.Hostname+" has more jobs !",
+						host.Hostname, "has more jobs !",
 					)
 					formatter.ColoredPrintln(
 						formatter.Green,
 						true,
-						"Number of commands for ", host.Hostname, " :",
+						"Number of commands for", host.Hostname, ":",
 						len(host.Commands),
 					)
 
@@ -211,6 +175,28 @@ loop:
 
 		}
 
+	}
+
+}
+
+// Function to execute a disconnection of host with a command.
+func Disconnecter(
+	message string,
+	host *formatter.Host,
+	disconnected chan<- *formatter.Host,
+) {
+
+	// display
+	formatter.ColoredPrintln(
+		formatter.Red,
+		false,
+		message,
+	)
+
+	// dispatch remaining work to other hosts
+	select {
+	case disconnected <- host:
+	default:
 	}
 
 }
@@ -272,6 +258,13 @@ func RemainingCommands(
 	ncommands int,
 ) {
 
+	// display
+	formatter.ColoredPrintln(
+		formatter.White,
+		true,
+		"Timer for commands is set !",
+	)
+
 	// set a timer
 	timer := time.NewTimer(time.Duration(180) * time.Second)
 
@@ -291,7 +284,7 @@ func RemainingCommands(
 			if host.IsConnected {
 
 				// increment counter
-				counter += len(host.Commands)
+				counter += host.CommandNumber
 			}
 		}
 
@@ -299,7 +292,7 @@ func RemainingCommands(
 		formatter.ColoredPrintln(
 			formatter.Magenta,
 			false,
-			"Number of commands remaining :",
+			"Number of commands executed :",
 			counter,
 			"/",
 			ncommands,
@@ -311,9 +304,8 @@ func RemainingCommands(
 			formatter.Magenta,
 			false,
 			"at time ",
-			hour, ":",
-			minute, ":",
-			second,
+			strconv.Itoa(hour)+":"+
+				strconv.Itoa(minute)+":"+strconv.Itoa(second),
 		)
 	}
 }
@@ -351,7 +343,7 @@ func RunCommands(
 
 	// if we use the timer, run the go routine
 	if config.Timer {
-		RemainingCommands(
+		go RemainingCommands(
 			hosts,
 			ncommands,
 		)
