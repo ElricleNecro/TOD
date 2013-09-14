@@ -27,6 +27,9 @@ type Config struct {
 
 	// To set or not the timer for displaying remaining commands
 	Timer bool
+
+	// The path to the log for commands output
+	LogCommand string
 }
 
 // A function to get the data from the command line
@@ -80,6 +83,12 @@ func ReadConfig() *Config {
 		10,
 		"The default time out in second to wait before to say that the host"+
 			" is disconnected.",
+	)
+	flag.StringVar(
+		&data_config.LogCommand,
+		"log_command",
+		"/tmp",
+		"The path to the directory for log of commands output.",
 	)
 
 	// parse the command line
