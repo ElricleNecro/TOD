@@ -153,28 +153,8 @@ loop:
 				// wait here for new jobs
 				if i == len(host.Commands)-1 {
 
-					// display
-					formatter.ColoredPrintln(
-						formatter.Magenta,
-						true,
-						"Waiting more jobs for", host.Hostname,
-					)
-
-					// Now wait for new job
-					<-*(host.Waiter)
-
-					// display
-					formatter.ColoredPrintln(
-						formatter.Magenta,
-						true,
-						host.Hostname, "has more jobs !",
-					)
-					formatter.ColoredPrintln(
-						formatter.Green,
-						true,
-						"Number of commands for", host.Hostname, ":",
-						len(host.Commands),
-					)
+					// Wait for other hosts
+					Waiter(host)
 
 				}
 
@@ -183,11 +163,39 @@ loop:
 		} else {
 
 			// Now wait for new job
-			<-*(host.Waiter)
+			Waiter(host)
 
 		}
 
 	}
+
+}
+
+// Function which executes commands when a host has to wait for other hosts.
+func Waiter(host *formatter.Host) {
+
+	// display
+	formatter.ColoredPrintln(
+		formatter.Magenta,
+		true,
+		"Waiting more jobs for", host.Hostname,
+	)
+
+	// Now wait for new job
+	<-*(host.Waiter)
+
+	// display
+	formatter.ColoredPrintln(
+		formatter.Magenta,
+		true,
+		host.Hostname, "has more jobs !",
+	)
+	formatter.ColoredPrintln(
+		formatter.Green,
+		true,
+		"Number of commands for", host.Hostname, ":",
+		len(host.Commands),
+	)
 
 }
 
