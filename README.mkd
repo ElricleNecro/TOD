@@ -24,6 +24,15 @@ run a command on it. If not, all the remaining charge of commands of this host
 is dispatched to the other hosts which are connected(available). **TOD** ends only
 when all commands to be executed are done.
 
+Description:
+------------
+
+New features:
+-------------
+* After the run of the program, a summary of commands executed on each hosts is displayed.
+* The charge of commands on one host is distributed in priority to low loaded hosts when
+this host is disconnected.
+
 Usage:
 ------
 
@@ -46,9 +55,15 @@ Options:
 You can set some default parameters on the command line:
 
 ```
--port : the default port number on which the hosts are listening for a SSH connection.
--protocol : the default protocol used by hosts ("tcp","udp","tcp4"...)
--timeout: the time in seconds after which the host is disconnected.
+-port : the port number on which the hosts are listening for a SSH connection (default 22).
+-protocol : the default protocol used by hosts ("tcp","udp","tcp4"...) (default tcp)
+-timeout: the time in seconds after which the host is disconnected (default 10).
+-timer: if set, display each three minutes the remaining number of commands to execute.
+    Useful when running it on tmux, or screen and we don't to go up to see where we are.
+-log_command: the path to the the directory where to put logs of commands output (default /tmp).
+-no_result: if set, the output of commands isn't displayed on the standard output.
+-stdin: if set, reads the list of hosts from the standard input with hosts names separated by
+    the character |. The -hosts option can be omitted in this case (set it do nothing).
 ```
 
 Users file:
@@ -62,6 +77,14 @@ PERCEVAL:
     commands: [ hostname, whoami ]
 ```
 For multiple users, chained this type of block.
+```
+PERCEVAL:
+    password: sloubi
+    commands: [ hostname, whoami ]
+ARTHUR:
+    password: graal
+    commands: ["Ne m'appelez pas Sir!"]
+```
 
 Hosts file:
 -----------
