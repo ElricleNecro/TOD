@@ -175,7 +175,8 @@ func Dispatcher(
 			ColoredPrintln(
 				None,
 				true,
-				"Send more jobs signal to ", hosts[host].Hostname,
+				"Send more jobs signal to", hosts[host].Hostname,
+				"\nwith new length of", len(hosts[host].Commands),
 			)
 			select {
 			case *(hosts[host].Waiter) <- 1:
