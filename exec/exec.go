@@ -38,7 +38,7 @@ loop:
 				)
 
 				// number of the command
-				host.CommandNumber = i
+				host.CommandNumber = i + 1
 
 				// create a session object
 				session := ssh.New(
@@ -149,12 +149,12 @@ loop:
 				}
 
 				// wait here for new jobs
-				//if i == len(host.Commands)-1 {
+				if i == len(host.Commands)-1 {
 
-				// Wait for other hosts
-				//Waiter(host)
+					//Wait for other hosts
+					Waiter(host)
 
-				//}
+				}
 
 			}
 
@@ -212,10 +212,7 @@ func Disconnecter(
 	)
 
 	// dispatch remaining work to other hosts
-	select {
-	case disconnected <- host:
-	default:
-	}
+	disconnected <- host
 
 }
 
@@ -251,13 +248,13 @@ func Disconnection(
 
 		// dispatch remaining work to other hosts
 		formatter.Dispatcher(
-			host.Commands[host.CommandNumber:],
+			host.Commands[host.CommandNumber-1:],
 			hosts,
 			false,
 		)
 
 		// Set the commands to nothing for the sorter of the dispatcher
-		host.Commands = make([]*formatter.Command, 0)
+		//host.Commands = make([]*formatter.Command, 0)
 
 		// display
 		formatter.ColoredPrintln(
@@ -302,7 +299,7 @@ func RemainingCommands(
 			if host.IsConnected {
 
 				// increment counter
-				counter += host.CommandNumber
+				counter += (host.CommandNumber - 1)
 			}
 		}
 
@@ -326,6 +323,50 @@ func RemainingCommands(
 				strconv.Itoa(minute)+":"+strconv.Itoa(second),
 		)
 	}
+}
+
+// A function which displays hosts and the number of commands they have executed.
+func DisplayHostsCommands(hosts []*formatter.Host) {
+
+	// counter
+	counter := 0
+
+	// loop over hosts
+	for _, host := range hosts {
+
+		// display hostname
+		formatter.ColoredPrint(
+			formatter.Magenta,
+			false,
+			host.Hostname, ": ",
+		)
+
+		// display the number of command executed with different
+		// colors in case of a disconnected host
+		if host.IsConnected {
+			formatter.ColoredPrintln(
+				formatter.Green,
+				false,
+				host.CommandNumber, "/", len(host.Commands),
+			)
+			counter += host.CommandNumber
+		} else {
+			formatter.ColoredPrintln(
+				formatter.Red,
+				false,
+				host.CommandNumber-1, "/", len(host.Commands),
+			)
+			counter += host.CommandNumber - 1
+		}
+	}
+
+	// display the total number to check coherence
+	formatter.ColoredPrintln(
+		formatter.Magenta,
+		false,
+		"Total of commands:", counter,
+	)
+
 }
 
 // This function loop over hosts to launch commands in concurrent mode.
@@ -390,6 +431,9 @@ func RunCommands(
 			"Number of remaining commands:", ncommands-1-i,
 		)
 	}
+
+	// display the summary of commands on hosts
+	DisplayHostsCommands(hosts)
 
 }
 
