@@ -4,6 +4,7 @@ import (
 	"github.com/ElricleNecro/TOD/checker"
 	"github.com/ElricleNecro/TOD/configuration"
 	"github.com/ElricleNecro/TOD/formatter"
+	"github.com/ElricleNecro/TOD/log_command"
 	"github.com/ElricleNecro/TOD/ssh"
 	"strconv"
 	"time"
@@ -127,6 +128,15 @@ loop:
 
 				// The command has been executed correctly, say it to other
 				ender <- true
+
+				// Write the log of the command
+				log_command.WriteLogCommand(
+					output,
+					config,
+					host.Hostname,
+					host.Commands[i].Command,
+					i,
+				)
 
 				// Close the session
 				session.Close()
