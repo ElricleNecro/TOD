@@ -57,7 +57,7 @@ func ReadConfig() *Config {
 	)
 	flag.BoolVar(
 		&data_config.Timer,
-		"stdin",
+		"timer",
 		false,
 		"If set, a timer will be launched to display the number of"+
 			" remaining commands.",
