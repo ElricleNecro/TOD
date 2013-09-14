@@ -16,12 +16,12 @@ func Run() {
 	data_config := configuration.ReadConfig()
 
 	// get data structure from files
-	if !*data_config.Stdin {
-		hosts_config = configuration.ReadHostsYAML(*data_config.Hosts)
+	if !data_config.Stdin {
+		hosts_config = configuration.ReadHostsYAML(data_config.Hosts)
 	} else {
 		hosts_config = configuration.ReadHostsStdin(data_config)
 	}
-	users_config := configuration.ReadUsersYAML(*data_config.Users)
+	users_config := configuration.ReadUsersYAML(data_config.Users)
 
 	// convert those data to dispatcher data
 	hosts := formatter.HostsToDispatcher(*hosts_config)
