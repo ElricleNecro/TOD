@@ -142,11 +142,13 @@ loop:
 				session.Close()
 
 				// for now print the result of the command
-				formatter.ColoredPrintln(
-					formatter.Magenta,
-					false,
-					output,
-				)
+				if !config.NoResults {
+					formatter.ColoredPrintln(
+						formatter.Magenta,
+						false,
+						output,
+					)
+				}
 
 				// wait here for new jobs
 				if i == len(host.Commands)-1 {
