@@ -27,17 +27,15 @@ loop:
 		// check the size of commands to execute before
 		if len(host.Commands) != 0 {
 
-			// display
-			formatter.ColoredPrintln(
-				formatter.Blue,
-				true,
-				"Executing",
-				len(host.Commands),
-				"commands for", host.Hostname,
-			)
-
 			// loop over commands on this hosts
 			for i := host.CommandNumber; i < len(host.Commands); i++ {
+
+				// display
+				formatter.ColoredPrintln(
+					formatter.Blue,
+					true,
+					"Executing command", i, "for", host.Hostname,
+				)
 
 				// number of the command
 				host.CommandNumber = i
@@ -151,12 +149,12 @@ loop:
 				}
 
 				// wait here for new jobs
-				if i == len(host.Commands)-1 {
+				//if i == len(host.Commands)-1 {
 
-					// Wait for other hosts
-					Waiter(host)
+				// Wait for other hosts
+				//Waiter(host)
 
-				}
+				//}
 
 			}
 
@@ -244,8 +242,8 @@ func Disconnection(
 		formatter.ColoredPrintln(
 			formatter.Green,
 			false,
-			"Dispatch the jobs of ", host.Hostname,
-			" to other connected hosts !",
+			"Dispatch the jobs of", host.Hostname,
+			"to other connected hosts !",
 		)
 
 		// mark the host as not connected
@@ -265,7 +263,7 @@ func Disconnection(
 		formatter.ColoredPrintln(
 			formatter.Green,
 			false,
-			"Dispatching done for ", host.Hostname, " !",
+			"Dispatching done for", host.Hostname, "!",
 		)
 	}
 
@@ -386,6 +384,11 @@ func RunCommands(
 	// Wait for the end of goroutines
 	for i := 0; i < ncommands; i++ {
 		<-ender
+		formatter.ColoredPrintln(
+			formatter.White,
+			true,
+			"Number of remaining commands:", ncommands-1-i,
+		)
 	}
 
 }
