@@ -48,6 +48,7 @@ func TestRunCommands(t *testing.T) {
 	conf.Port = 22
 	conf.Protocol = "tcp"
 	conf.Timeout = 10
+	conf.LogCommand = "/tmp"
 
 	// Create a command which will be duplicated
 	command := &formatter.Command{
