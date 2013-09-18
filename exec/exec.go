@@ -1,11 +1,10 @@
 package exec
 
 import (
-	"github.com/ElricleNecro/TOD/checker"
+	"github.com/ElricleNecro/TOD/commands"
 	"github.com/ElricleNecro/TOD/configuration"
 	"github.com/ElricleNecro/TOD/formatter"
 	"github.com/ElricleNecro/TOD/log_command"
-	"github.com/ElricleNecro/TOD/ssh"
 	"strconv"
 	"time"
 )
@@ -40,87 +39,17 @@ loop:
 				// number of the command
 				host.CommandNumber = i + 1
 
-				// create a session object
-				session := ssh.New(
-					host.Commands[i].User,
+				// Execute the command on the specified host
+				output, err := commands.OneCommand(
 					host,
+					host.Commands[i].User,
+					host.Commands[i].Command,
+					config.Timeout,
+					disconnected,
 				)
 
-				// check the connection to the host
-				if is, err := checker.IsConnected(host, config.Timeout); !is || (err != nil) {
-
-					// disconnect
-					Disconnecter(
-						"Can't connect to host "+host.Hostname,
-						host,
-						disconnected,
-					)
-
-					// exit the loop
-					break loop
-				}
-
-				// display that host is connected
-				formatter.ColoredPrintln(
-					formatter.Green,
-					false,
-					"Host",
-					host.Hostname,
-					"seems to be online!",
-				)
-
-				// Attempt a connection to the host
-				err := session.Connect()
-
-				// check the host can be called
+				// check the command as executed correctly, else exit loop
 				if err != nil {
-
-					// disconnect
-					Disconnecter(
-						"Can't connect to host "+host.Hostname,
-						host,
-						disconnected,
-					)
-
-					// exit the loop
-					break loop
-				}
-
-				// add a session to connect to host
-				_, err = session.AddSession()
-				if err != nil {
-
-					// disconnect
-					Disconnecter(
-						"Problem when adding a session to the host !",
-						host,
-						disconnected,
-					)
-
-					// exit the loop
-					break loop
-				}
-
-				// execute the command on the host
-				formatter.ColoredPrintln(
-					formatter.Green,
-					false,
-					"Execute command on", host.Hostname,
-				)
-				output, err2 := session.Run(host.Commands[i].Command)
-				if err2 != nil {
-
-					// disconnect
-					Disconnecter(
-						"An error occurred during the execution of the command !\n"+
-							"The command was: "+host.Commands[i].Command+
-							"and the host is: "+host.Hostname+
-							"\nError information: "+err2.Error(),
-						host,
-						disconnected,
-					)
-
-					// exit the loop
 					break loop
 				}
 
@@ -135,9 +64,6 @@ loop:
 					host.Commands[i].Command,
 					i,
 				)
-
-				// Close the session
-				session.Close()
 
 				// for now print the result of the command
 				if !config.NoResults {
@@ -194,25 +120,6 @@ func Waiter(host *formatter.Host) {
 		"Number of commands for", host.Hostname, ":",
 		len(host.Commands),
 	)
-
-}
-
-// Function to execute a disconnection of host with a command.
-func Disconnecter(
-	message string,
-	host *formatter.Host,
-	disconnected chan<- *formatter.Host,
-) {
-
-	// display
-	formatter.ColoredPrintln(
-		formatter.Red,
-		false,
-		message,
-	)
-
-	// dispatch remaining work to other hosts
-	disconnected <- host
 
 }
 
