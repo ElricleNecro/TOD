@@ -17,7 +17,8 @@ func WriteLogCommand(
 ) {
 
 	// Create the file name with hostname and the number of the command
-	filename := config.LogCommand + "/" + hostname + strconv.Itoa(number) + ".log"
+	filename := config.LogCommand + "/" +
+		hostname + strconv.Itoa(number) + ".log"
 
 	// content of the file
 	content := command + "\n" + output
