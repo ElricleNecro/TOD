@@ -49,29 +49,38 @@ func IsTooLoaded(
 ) bool {
 
 	// Get the number of processors of the host
-	nprocs := GetPhysicalCPU(
+	nprocs, err := GetPhysicalCPU(
 		host,
 		user,
 		timeout,
 		disconnected,
 	)
+	if err != nil {
+		return true
+	}
 
 	// get the list of users
-	users := GetUsers(
+	users, err2 := GetUsers(
 		host,
 		user,
 		timeout,
 		disconnected,
 	)
+	if err2 != nil {
+		return true
+	}
 
 	// get the total CPU and memory used on the host
-	CPU, memory := GetTotalCPUMemory(
+	CPU, memory, err3 := GetTotalCPUMemory(
 		host,
 		user,
 		timeout,
 		disconnected,
 		users,
 	)
+	if err3 != nil {
+		return true
+	}
 
 	// return if the host is too loaded
 	return CPU/float64(nprocs) >= cpu_max || memory >= memory_max
@@ -84,7 +93,7 @@ func GetTotalCPUMemory(
 	timeout int,
 	disconnected chan<- *formatter.Host,
 	users []string,
-) (float64, float64) {
+) (float64, float64, error) {
 
 	// loop over users
 	cpu := 0.0
@@ -92,20 +101,23 @@ func GetTotalCPUMemory(
 	for _, myuser := range users {
 
 		// get the cpu and memory
-		stats := GetCPUMemory(
+		stats, err := GetCPUMemory(
 			host,
 			user,
 			timeout,
 			disconnected,
 			myuser,
 		)
+		if err != nil {
+			return 0.0, 0.0, err
+		}
 		cpu += stats[0]
 		mem += stats[1]
 
 	}
 
 	// return the total
-	return cpu, mem
+	return cpu, mem, nil
 
 }
 
@@ -116,7 +128,7 @@ func GetCPUMemory(
 	timeout int,
 	disconnected chan<- *formatter.Host,
 	username string,
-) [2]float64 {
+) ([2]float64, error) {
 
 	// the command to get the cpu and memory of an user
 	command := "top -b -n 1 -u " + strings.TrimSpace(username) +
@@ -133,11 +145,11 @@ func GetCPUMemory(
 
 	// check can connect
 	if err != nil {
-		panic(err)
+		return [2]float64{}, err
 	}
 
 	// return the slice of CPU and memory.
-	return ParseCPUMemory(output)
+	return ParseCPUMemory(output), err
 
 }
 
@@ -163,7 +175,7 @@ func GetUsers(
 	user *formatter.User,
 	timeout int,
 	disconnected chan<- *formatter.Host,
-) []string {
+) ([]string, error) {
 
 	// the command to execute in order to get the list of users
 	command := "who | cut -f 1 -d' ' | uniq"
@@ -179,11 +191,11 @@ func GetUsers(
 
 	// check can connect
 	if err != nil {
-		panic(err)
+		return []string{}, err
 	}
 
 	// return the number
-	return ParseUsers(output)
+	return ParseUsers(output), err
 
 }
 
@@ -202,7 +214,7 @@ func GetPhysicalCPU(
 	user *formatter.User,
 	timeout int,
 	disconnected chan<- *formatter.Host,
-) int {
+) (int, error) {
 
 	// the command to get the number of physical CPU
 	command := "cat /proc/cpuinfo | grep 'processor' | uniq | wc -l"
@@ -218,11 +230,11 @@ func GetPhysicalCPU(
 
 	// check can connect
 	if err != nil {
-		panic(err)
+		return 0, err
 	}
 
 	// return the number
-	return ParseCPU(output)
+	return ParseCPU(output), err
 }
 
 // Function to parse the output of the command returning the number of processors
