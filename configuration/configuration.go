@@ -33,6 +33,15 @@ type Config struct {
 
 	// To display or not commands output.
 	NoResults bool
+
+	// To check if the host is too loaded
+	ExcludeLoaded bool
+
+	// The maximal percentage of CPU to use
+	CPUMax float64
+
+	// The maximal percentage of memory to use.
+	MemoryMax float64
 }
 
 // A function to get the data from the command line
@@ -98,6 +107,25 @@ func ReadConfig() *Config {
 		"no_results",
 		false,
 		"Set it if you don't want to display the result of commands.",
+	)
+	flag.BoolVar(
+		&data_config.ExcludeLoaded,
+		"exclude_loaded",
+		false,
+		"Set it if you want to run just on hosts not running to CPU loaded"+
+			" or too memory loaded.",
+	)
+	flag.Float64Var(
+		&data_config.CPUMax,
+		"cpu_max",
+		25.0,
+		"The maximal percent of CPU to be used in the host to exclude it.",
+	)
+	flag.Float64Var(
+		&data_config.MemoryMax,
+		"memory_max",
+		30.0,
+		"The maximal percent of memory to be used in the host to exclude it.",
 	)
 
 	// parse the command line
