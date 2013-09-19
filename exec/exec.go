@@ -4,6 +4,7 @@ import (
 	"github.com/ElricleNecro/TOD/commands"
 	"github.com/ElricleNecro/TOD/configuration"
 	"github.com/ElricleNecro/TOD/formatter"
+	"github.com/ElricleNecro/TOD/load_checker"
 	"github.com/ElricleNecro/TOD/log_command"
 	"strconv"
 	"time"
@@ -35,6 +36,18 @@ loop:
 					true,
 					"Executing command", i, "for", host.Hostname,
 				)
+
+				// check if we want to exclude too loaded hosts
+				if config.ExcludeLoaded {
+					load_checker.CheckLoaded(
+						host,
+						host.Commands[i].User,
+						config.Timeout,
+						config.CPUMax,
+						config.MemoryMax,
+						disconnected,
+					)
+				}
 
 				// number of the command
 				host.CommandNumber = i + 1

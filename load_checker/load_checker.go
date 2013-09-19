@@ -7,6 +7,36 @@ import (
 	"strings"
 )
 
+// Function to check if the host is too loaded and to dispplay message and
+// dispatch remaining work.
+func CheckLoaded(
+	host *formatter.Host,
+	user *formatter.User,
+	timeout int,
+	cpu_max float64,
+	memory_max float64,
+	disconnected chan<- *formatter.Host,
+) {
+
+	// Check if host too loaded
+	if IsTooLoaded(
+		host,
+		user,
+		timeout,
+		cpu_max,
+		memory_max,
+		disconnected,
+	) {
+
+		// Disconnect the host and display message
+		commands.Disconnecter(
+			"The host "+host.Hostname+" is too loaded !\nExclude it.",
+			host,
+			disconnected,
+		)
+	}
+}
+
 // This function checks if the host has a too high charge and if it
 // cans accept an other charge.
 func IsTooLoaded(
