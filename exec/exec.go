@@ -37,6 +37,9 @@ loop:
 					"Executing command", i, "for", host.Hostname,
 				)
 
+				// number of the command
+				host.CommandNumber = i + 1
+
 				// check if we want to exclude too loaded hosts
 				if config.ExcludeLoaded {
 					load_checker.CheckLoaded(
@@ -48,9 +51,6 @@ loop:
 						disconnected,
 					)
 				}
-
-				// number of the command
-				host.CommandNumber = i + 1
 
 				// Execute the command on the specified host
 				output, err := commands.OneCommand(
