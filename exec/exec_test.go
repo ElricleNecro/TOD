@@ -23,6 +23,7 @@ var (
 		"arbois",
 		"machin",
 		"ugni",
+		"picardan",
 	}
 )
 

@@ -16,25 +16,31 @@ func CheckLoaded(
 	cpu_max float64,
 	memory_max float64,
 	disconnected chan<- *formatter.Host,
-) {
+) (bool, error) {
 
 	// Check if host too loaded
-	if IsTooLoaded(
+	if is, err := IsTooLoaded(
 		host,
 		user,
 		timeout,
 		cpu_max,
 		memory_max,
 		disconnected,
-	) {
+	); is || err != nil {
 
 		// Disconnect the host and display message
-		commands.Disconnecter(
-			"The host "+host.Hostname+" is too loaded !\nExclude it.",
-			host,
-			disconnected,
-		)
+		if err == nil {
+			commands.Disconnecter(
+				"The host "+host.Hostname+" is too loaded !\nExclude it.",
+				host,
+				disconnected,
+			)
+		}
+
+		return true, err
 	}
+
+	return false, nil
 }
 
 // This function checks if the host has a too high charge and if it
@@ -46,7 +52,7 @@ func IsTooLoaded(
 	cpu_max float64,
 	memory_max float64,
 	disconnected chan<- *formatter.Host,
-) bool {
+) (bool, error) {
 
 	// Get the number of processors of the host
 	nprocs, err := GetPhysicalCPU(
@@ -56,7 +62,7 @@ func IsTooLoaded(
 		disconnected,
 	)
 	if err != nil {
-		return true
+		return true, err
 	}
 
 	// get the list of users
@@ -67,7 +73,7 @@ func IsTooLoaded(
 		disconnected,
 	)
 	if err2 != nil {
-		return true
+		return true, err2
 	}
 
 	// get the total CPU and memory used on the host
@@ -79,11 +85,11 @@ func IsTooLoaded(
 		users,
 	)
 	if err3 != nil {
-		return true
+		return true, err3
 	}
 
 	// return if the host is too loaded
-	return CPU/float64(nprocs) >= cpu_max || memory >= memory_max
+	return CPU/float64(nprocs) >= cpu_max || memory >= memory_max, nil
 }
 
 // Function to get the total CPU and memory used.
@@ -204,7 +210,7 @@ func GetUsers(
 func ParseUsers(output string) []string {
 
 	// split the string by returns
-	return strings.Split(output, "\n")
+	return strings.Fields(output)
 
 }
 

@@ -42,14 +42,16 @@ loop:
 
 				// check if we want to exclude too loaded hosts
 				if config.ExcludeLoaded {
-					load_checker.CheckLoaded(
+					if is, err := load_checker.CheckLoaded(
 						host,
 						host.Commands[i].User,
 						config.Timeout,
 						config.CPUMax,
 						config.MemoryMax,
 						disconnected,
-					)
+					); is || err != nil {
+						break loop
+					}
 				}
 
 				// Execute the command on the specified host
@@ -162,9 +164,6 @@ func Disconnection(
 			"Dispatch the jobs of", host.Hostname,
 			"to other connected hosts !",
 		)
-
-		// mark the host as not connected
-		host.IsConnected = false
 
 		// dispatch remaining work to other hosts
 		formatter.Dispatcher(
