@@ -11,7 +11,14 @@ var (
 
 	// A list of host
 	hostnames = []string{
-		"chasselas.iap.fr",
+		"courbu",
+		"aspiran",
+		"roussanne",
+		"doucillon",
+		"verdejo",
+		"molette",
+		"mauzac",
+		"mancin",
 		"vaccarese",
 		"carmenere",
 		"tressalier",
