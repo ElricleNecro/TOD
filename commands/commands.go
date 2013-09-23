@@ -129,9 +129,6 @@ func Disconnecter(
 		message,
 	)
 
-	// mark the host as not connected
-	host.IsConnected = false
-
 	// dispatch remaining work to other hosts
 	disconnected <- host
 

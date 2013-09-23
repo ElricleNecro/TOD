@@ -165,6 +165,9 @@ func Disconnection(
 			"to other connected hosts !",
 		)
 
+		// mark the host as not connected
+		host.IsConnected = false
+
 		// dispatch remaining work to other hosts
 		formatter.Dispatcher(
 			host.Commands[host.CommandNumber-1:],
