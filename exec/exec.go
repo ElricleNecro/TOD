@@ -6,6 +6,7 @@ import (
 	"github.com/ElricleNecro/TOD/formatter"
 	"github.com/ElricleNecro/TOD/load_checker"
 	"github.com/ElricleNecro/TOD/log_command"
+	"github.com/ElricleNecro/TOD/timers"
 	"strconv"
 	"time"
 )
@@ -54,6 +55,9 @@ loop:
 					}
 				}
 
+				// mark the host as executing command
+				host.IsWorking = true
+
 				// Execute the command on the specified host
 				output, err := commands.OneCommand(
 					host,
@@ -62,6 +66,9 @@ loop:
 					config.Timeout,
 					disconnected,
 				)
+
+				// mark the host as executing command
+				host.IsWorking = false
 
 				// check the command as executed correctly, else exit loop
 				if err != nil {
@@ -203,7 +210,7 @@ func RemainingCommands(
 	)
 
 	// set a timer
-	timer := time.NewTimer(time.Duration(180) * time.Second)
+	timer := time.NewTicker(time.Duration(180) * time.Second)
 
 	// start an infinite loop
 	for {
@@ -327,6 +334,14 @@ func RunCommands(
 		go RemainingCommands(
 			hosts,
 			ncommands,
+		)
+	}
+
+	// if we use the timer of working hosts, run the go routine
+	if config.WorkTimer {
+		go timers.WorkingTimer(
+			hosts,
+			config.WorkTime,
 		)
 	}
 

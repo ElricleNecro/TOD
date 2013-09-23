@@ -60,13 +60,14 @@ func TestRunCommands(t *testing.T) {
 	conf.CPUMax = 25.0
 	conf.MemoryMax = 30.0
 	conf.ExcludeLoaded = true
+	conf.WorkTimer = true
 
 	// Create a command which will be duplicated
 	command := &formatter.Command{
 		Command: "sleep $(( RANDOM % 10 )) && /bin/hostname",
 		User:    user,
 	}
-	commands := make([]*formatter.Command, 100)
+	commands := make([]*formatter.Command, 121)
 	for i, _ := range commands {
 		commands[i] = command
 	}

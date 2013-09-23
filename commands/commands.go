@@ -52,7 +52,7 @@ func OneCommand(
 
 		// disconnect
 		Disconnecter(
-			"Can't connect to host "+host.Hostname,
+			"Can't create connection to host "+host.Hostname,
 			host,
 			disconnected,
 		)

@@ -77,6 +77,9 @@ type Host struct {
 	// Store here if the host is connected or not
 	IsConnected bool
 
+	// Store if the host is working
+	IsWorking bool
+
 	// Channel on which to wait for new job
 	Waiter *(chan int)
 }
@@ -264,6 +267,7 @@ func HostsToDispatcher(hosts configuration.Hosts) []*Host {
 			Port:        fields.Port,
 			Protocol:    fields.Protocol,
 			IsConnected: true,
+			IsWorking:   false,
 			Waiter:      &channel,
 		}
 

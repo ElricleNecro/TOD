@@ -28,6 +28,10 @@ type Config struct {
 	// To set or not the timer for displaying remaining commands
 	Timer bool
 
+	// To set or not the timer for displaying working hosts
+	WorkTimer bool
+	WorkTime  int
+
 	// The path to the log for commands output
 	LogCommand string
 
@@ -76,6 +80,19 @@ func ReadConfig() *Config {
 		false,
 		"If set, a timer will be launched to display the number of"+
 			" remaining commands.",
+	)
+	flag.BoolVar(
+		&data_config.WorkTimer,
+		"work_timer",
+		false,
+		"If set, a timer will be launched to display the working"+
+			" hosts.",
+	)
+	flag.IntVar(
+		&data_config.WorkTime,
+		"work_timer_step",
+		180,
+		"The value of the step between displays of hosts for work timer.",
 	)
 	flag.StringVar(
 		&data_config.Protocol,
