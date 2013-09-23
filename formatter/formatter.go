@@ -24,6 +24,11 @@ const (
 	White   = color.White
 )
 
+// the maximal value of the integer 32
+const (
+	MaxInt = 1<<31 - 1
+)
+
 // The structure containing information for the connection as a given
 // user to a host.
 type User struct {
@@ -97,7 +102,19 @@ func (h *hostSorter) Swap(i, j int) {
 
 // The function to compare two hosts
 func (h *hostSorter) Less(i, j int) bool {
-	return len(h.Hosts[i].Commands) < len(h.Hosts[j].Commands)
+
+	// First host length
+	ni := len(h.Hosts[i].Commands)
+	if !h.Hosts[i].IsConnected {
+		ni = MaxInt
+	}
+
+	// Same with second host
+	nj := len(h.Hosts[j].Commands)
+	if !h.Hosts[j].IsConnected {
+		nj = MaxInt
+	}
+	return ni < nj
 }
 
 // This function dispatches the commands on some hosts
