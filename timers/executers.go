@@ -42,7 +42,7 @@ func DisplayWorkingHosts(hosts []*formatter.Host) {
 	for _, host := range hosts {
 
 		// if the host is connected and is marked as executing command
-		if host.IsConnected {
+		if host.IsConnected && host.IsWorking {
 
 			// Display the name of the host and the command being executed
 			formatter.ColoredPrintln(
