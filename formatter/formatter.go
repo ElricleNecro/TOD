@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/ElricleNecro/TOD/configuration"
 	color "github.com/daviddengcn/go-colortext"
-	"math"
 	"sort"
 )
 
@@ -124,6 +123,7 @@ func (h *hostSorter) Less(i, j int) bool {
 func Dispatcher(
 	commands []*Command,
 	hosts []*Host,
+	nhosts_max int,
 	first bool,
 ) {
 
@@ -142,12 +142,6 @@ func Dispatcher(
 		)
 	}
 
-	// The same for the number of commands to execute
-	ncomm := len(commands)
-
-	// Compute the number of commands per hosts to execute
-	NCH := math.Ceil(float64(ncomm) / float64(nhosts))
-
 	// init by pointing the current host to the first one
 	host = -1
 
@@ -163,23 +157,31 @@ func Dispatcher(
 	sort.Sort(sorter)
 
 	// loop over commands and affect them to hosts
-	for i, command := range commands {
+	for _, command := range commands {
 
-		// check if we need to pass to an other host with our repartition
-		if math.Mod(float64(i), NCH) == 0 {
+		// pass to another host
+		host = (host + 1) % nhosts
 
-			host++
+		// if the host isn't connected
+		for !hosts[host].IsConnected {
 
-			// if the host isn't connected
-			for !hosts[host].IsConnected {
-
-				// pass to the next host
-				host++
-			}
-
-			// add the host to list
-			myhost = append(myhost, host)
+			// pass to the next host
+			host = (host + 1) % nhosts
 		}
+
+		// count the number of workers
+		nworkers := CountWorkers(hosts)
+
+		// if the maximal number of hosts is get, affect to only working
+		// hosts
+		if nworkers >= nhosts_max && nhosts_max > 0 {
+			for !isWorker(hosts[host]) {
+				host = (host + 1) % nhosts
+			}
+		}
+
+		// add the host to list
+		myhost = append(myhost, host)
 
 		// append to the list of commands
 		hosts[host].Commands = append(hosts[host].Commands, command)
@@ -204,6 +206,39 @@ func Dispatcher(
 			}
 		}
 	}
+
+}
+
+// This function computes the number of hosts which have to execute
+// commands. It's the number of hosts which are connected and which
+// have a given number of command to execute.
+func CountWorkers(hosts []*Host) int {
+
+	// init the counter
+	counter := 0
+
+	// loop over hosts
+	for _, host := range hosts {
+
+		// increment if the host is a worker as defined before.
+		if isWorker(host) {
+			counter++
+		}
+	}
+
+	// return the counter
+	return counter
+
+}
+
+// This function returns true if the host in argument is considered as
+// worker.
+func isWorker(host *Host) bool {
+
+	if host.IsConnected && len(host.Commands) > 0 {
+		return true
+	}
+	return false
 
 }
 
