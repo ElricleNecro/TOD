@@ -46,6 +46,9 @@ type Config struct {
 
 	// The maximal percentage of memory to use.
 	MemoryMax float64
+
+	// The maximal number of hosts to use in the list.
+	HostsMax int
 }
 
 // A function to get the data from the command line
@@ -112,6 +115,12 @@ func ReadConfig() *Config {
 		10,
 		"The default time out in second to wait before to say that the host"+
 			" is disconnected.",
+	)
+	flag.IntVar(
+		&data_config.HostsMax,
+		"hosts_max",
+		-1,
+		"The maximal number of hosts to use to dispatch the commands.",
 	)
 	flag.StringVar(
 		&data_config.LogCommand,
