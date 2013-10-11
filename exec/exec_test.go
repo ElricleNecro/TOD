@@ -11,26 +11,26 @@ var (
 
 	// A list of host
 	hostnames = []string{
+		"arbois",
+		"verdejo",
 		"courbu",
 		"aspiran",
+		"tressalier",
+		"picardan",
 		"roussanne",
 		"doucillon",
-		"verdejo",
 		"molette",
 		"mauzac",
 		"mancin",
 		"vaccarese",
 		"carmenere",
-		"tressalier",
 		"null",
 		"tockay",
 		"bidule",
 		"toké",
 		"poulsard",
-		"arbois",
 		"machin",
 		"ugni",
-		"picardan",
 	}
 )
 
@@ -61,6 +61,8 @@ func TestRunCommands(t *testing.T) {
 	conf.MemoryMax = 30.0
 	conf.ExcludeLoaded = true
 	conf.WorkTimer = true
+	conf.WorkTime = 120
+	conf.HostsMax = 5
 
 	// Create a command which will be duplicated
 	command := &formatter.Command{
@@ -97,6 +99,7 @@ func TestRunCommands(t *testing.T) {
 	formatter.Dispatcher(
 		commands,
 		hosts,
+		conf.HostsMax,
 		true,
 	)
 

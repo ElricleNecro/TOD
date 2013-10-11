@@ -150,6 +150,7 @@ func Waiter(host *formatter.Host) {
 func Disconnection(
 	hosts []*formatter.Host,
 	disconnected <-chan *formatter.Host,
+	HostsMax int,
 ) {
 
 	for {
@@ -179,6 +180,7 @@ func Disconnection(
 		formatter.Dispatcher(
 			host.Commands[host.CommandNumber-1:],
 			hosts,
+			HostsMax,
 			false,
 		)
 
@@ -327,6 +329,7 @@ func RunCommands(
 	go Disconnection(
 		hosts,
 		disconnected,
+		config.HostsMax,
 	)
 
 	// if we use the timer, run the go routine

@@ -31,6 +31,7 @@ func Run() {
 	formatter.Dispatcher(
 		commands,
 		hosts,
+		data_config.HostsMax,
 		true,
 	)
 
