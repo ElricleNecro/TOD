@@ -3,7 +3,6 @@ README
 
 Project:
 --------
-
 With this project, **TOD**, we want to propose a program which will dispatch a list of command on a list of machine.
 
 First, the program will check if the machine is reachable.
@@ -29,19 +28,30 @@ Description:
 
 New features:
 -------------
-* After the run of the program, a summary of commands executed on each hosts is displayed.
-* The charge of commands on one host is distributed in priority to low loaded hosts when
-this host is disconnected.
+* v1.3.1:
+    * Hosts on which some people are already being using the machines can be discarded
+    by setting the exclude_loaded option and putting other values for maximal memory
+    and cpu in the hosts with memory_max and cpu_max options.
+    * A timer can be set with work_timer to display a summary of working hosts
+    and their commands being executed, with a time step defined by work_timer_step.
+    * A maximal number of hosts to be used simultaneously can be set with the
+    hosts_max option. If the number is negative (default -1), all hosts specified
+    will be used.
+* v1.3:
+    * After the run of the program, a summary of commands executed on each hosts is displayed.
+    * The charge of commands on one host is distributed in priority to low loaded hosts when
+    this host is disconnected.
+
+Installation:
+-------------
+TODO: Go installation and TOD installation (easier).
 
 Usage:
 ------
-
 After the installation, you can simply run:
-
 ```
 $ TOD -users <user_file> -hosts <hosts_file>
 ```
-
 to get a first idea of the dispatch.
 
 In case of lists of hosts in the standard input, you must pass the -stdin option
@@ -50,25 +60,57 @@ and the list of hosts in STDIN must be in the format:
 alpha|beta|delta
 ```
 
+A more complete and useful example is the following.
+You have a file in which the hosts you want to use are in a column format *hosts.file*.
+You want to have informations on running hosts and exclude hosts already working,
+and that the output of commands doesn't be displayed on the terminal.
+The informations on commands and users running them are stored in the YAML format
+in *users.yaml*. The following command will do the job:
+```
+$ X=$(cat hosts.file | tr -s "\n" "|") ; echo "${X%?}" | TOD -users users.yaml -stdin -no_results -exclude_loaded -work_timer
+```
+The command
+```
+$ X=$(cat hosts.file | tr -s "\n" "|") ; echo "${X%?}"
+```
+modifies the list to a pipe separated list of hosts and remove the last pipe
+by
+```
+$ echo "${X%?}"
+```
+which is due to the last new line in the *hosts.file*. Then the list is piped
+to **TOD** with *-stdin* option. The other options allow to not display command's results,
+exclude loaded hosts and set a summary of running hosts all three minutes.
+
 Options:
 --------
 You can set some default parameters on the command line:
 
 ```
--port : the port number on which the hosts are listening for a SSH connection (default 22).
--protocol : the default protocol used by hosts ("tcp","udp","tcp4"...) (default tcp)
--timeout: the time in seconds after which the host is disconnected (default 10).
--timer: if set, display each three minutes the remaining number of commands to execute.
-    Useful when running it on tmux, or screen and we don't to go up to see where we are.
+-cpu_max: the maximal percent of the CPU to be used in the host to exclude it (default 25%).
+-exclude_loaded: if set, the program will exclude hosts which are too loaded according to
+    the values of the cpu_max and memory_max parameters. The jobs associated to
+    this host will be dispatched to other not loaded hosts.
+-hosts: the path to the YAML format file where hosts and there properties are stored.
+-hosts_max: the maximal number of hosts to use to dispatch the command. No more
+    hosts than this number will be used simultaneously (default -1: all hosts are used).
 -log_command: the path to the the directory where to put logs of commands output (default /tmp).
--no_result: if set, the output of commands isn't displayed on the standard output.
+-memory_max: the maximal percent of memory to be used in the host to exclude it (default 30%).
+-no_results: if set, the output of commands isn't displayed on the standard output.
+-port : the port number on which the hosts are listening for a SSH connection by default (default 22).
+-protocol : the default protocol used by hosts by default ("tcp","udp","tcp4"...) (default tcp)
 -stdin: if set, reads the list of hosts from the standard input with hosts names separated by
     the character |. The -hosts option can be omitted in this case (set it do nothing).
+-timeout: the time in seconds after which the host is disconnected (default 10).
+-users: the path to the YAML format file where users and the command associated are set.
+-work_timer: if set, a timer will be launched to display a summary of working
+    hosts, in a step defined by work_timer_step.
+    Useful when running it on tmux, or screen and we don't want to go up to see where we are.
+-work_timer_step: the value of the time step to display hosts informations in seconds (default 180).
 ```
 
 Users file:
 -----------
-
 The structure of the user file is in YAML format.
 For example to run commands on hosts as user PERCEVAL:
 ```
@@ -83,12 +125,11 @@ PERCEVAL:
     commands: [ hostname, whoami ]
 ARTHUR:
     password: graal
-    commands: ["Ne m'appelez pas Sir!"]
+    commands: ["echo \"Ne m'appelez pas Sir!\""]
 ```
 
 Hosts file:
 -----------
-
 The structure of the host file is in YAML format.
 For example for some machine and their specific caracteristics:
 ```
