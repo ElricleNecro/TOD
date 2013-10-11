@@ -57,9 +57,6 @@ func OneCommand(
 			disconnected,
 		)
 
-		// Close the session
-		session.Close()
-
 		// exit the loop
 		return "", err
 	}
