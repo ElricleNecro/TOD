@@ -184,7 +184,7 @@ func GetUsers(
 ) ([]string, error) {
 
 	// the command to execute in order to get the list of users
-	command := "who | cut -f 1 -d' ' | uniq"
+	command := "ps haeo user | sort -u"
 
 	// run this command on the host
 	output, err := commands.OneCommand(
