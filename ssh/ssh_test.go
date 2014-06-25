@@ -2,17 +2,18 @@ package ssh
 
 import (
 	"fmt"
-	"github.com/ElricleNecro/TOD/formatter"
 	"testing"
+
+	"github.com/ElricleNecro/TOD/formatter"
 )
 
 var (
-	user      = ""
+	myuser    = "duarte"
 	myhost    = "carmenere"
 	port      = 22
 	protocol  = "tcp"
-	password  = ""
 	id        = 1
+	key       = "~/.ssh/id_rsa"
 	mycommand = "/usr/bin/whoami"
 )
 
@@ -20,9 +21,9 @@ func TestConnection(t *testing.T) {
 
 	// Start by creating user and host object
 	user := formatter.User{
-		Name:     user,
+		Name:     myuser,
 		Identity: id,
-		Password: password,
+		Key:      key,
 	}
 	host := formatter.Host{
 		Hostname: myhost,
@@ -59,9 +60,9 @@ func TestAddSession(t *testing.T) {
 
 	// Start by creating user and host object
 	user := formatter.User{
-		Name:     user,
+		Name:     myuser,
 		Identity: id,
-		Password: password,
+		Key:      key,
 	}
 	host := formatter.Host{
 		Hostname: myhost,
@@ -109,9 +110,9 @@ func TestRun(t *testing.T) {
 
 	// Start by creating user and host object
 	user := formatter.User{
-		Name:     user,
+		Name:     myuser,
 		Identity: id,
-		Password: password,
+		Key:      key,
 	}
 	host := formatter.Host{
 		Hostname: myhost,

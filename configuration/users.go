@@ -2,13 +2,14 @@ package configuration
 
 import (
 	"io/ioutil"
+
 	"launchpad.net/goyaml"
 )
 
 // A type defining the user structure in the YAML file which we need
 // in argument.
 type MyUsers struct {
-	Password string   "password"
+	Key      string   "private_key"
 	Commands []string "commands"
 }
 

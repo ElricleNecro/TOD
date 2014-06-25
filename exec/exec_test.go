@@ -1,10 +1,11 @@
 package exec
 
 import (
-	config "github.com/ElricleNecro/TOD/configuration"
-	"github.com/ElricleNecro/TOD/formatter"
 	myusr "os/user"
 	"testing"
+
+	config "github.com/ElricleNecro/TOD/configuration"
+	"github.com/ElricleNecro/TOD/formatter"
 )
 
 var (
@@ -47,7 +48,7 @@ func TestRunCommands(t *testing.T) {
 		user = &formatter.User{
 			Name:     myuser,
 			Identity: 1,
-			Password: fields.Password,
+			Key:      fields.Key,
 		}
 	}
 

@@ -4,10 +4,23 @@ package ssh
 
 import (
 	"bytes"
+	"encoding/pem"
+	"errors"
+	"io"
+	"io/ioutil"
+	"net"
+	"os"
+	"os/user"
+	"strconv"
+	"strings"
+
+	"crypto"
+	"crypto/dsa"
+	"crypto/rsa"
+	"crypto/x509"
+
 	"code.google.com/p/go.crypto/ssh"
 	"github.com/ElricleNecro/TOD/formatter"
-	"net"
-	"strconv"
 )
 
 // A structure containing all information necessary to an SSH connection
@@ -30,10 +43,61 @@ type Session struct {
 	Host *formatter.Host
 }
 
-type clientPassword string
+// keychain implements the ClientKeyring interface
+type keychain struct {
+	keys []interface{}
+}
 
-func (p clientPassword) Password(user string) (string, error) {
-	return string(p), nil
+func (k *keychain) Key(i int) (interface{}, error) {
+	if i < 0 || i >= len(k.keys) {
+		return nil, nil
+	}
+	switch key := k.keys[i].(type) {
+	case *rsa.PrivateKey:
+		return &key.PublicKey, nil
+	case *dsa.PrivateKey:
+		return &key.PublicKey, nil
+	}
+	panic("unknown key type")
+}
+
+func (k *keychain) Sign(i int, rand io.Reader, data []byte) (sig []byte, err error) {
+	hashFunc := crypto.SHA1
+	h := hashFunc.New()
+	h.Write(data)
+	digest := h.Sum(nil)
+	switch key := k.keys[i].(type) {
+	case *rsa.PrivateKey:
+		return rsa.SignPKCS1v15(rand, key, hashFunc, digest)
+	}
+	return nil, errors.New("ssh: unknown key type")
+}
+
+func (k *keychain) loadPEM(file string) error {
+	buf, err := ioutil.ReadFile(file)
+	if err != nil {
+		return err
+	}
+	block, _ := pem.Decode(buf)
+	if block == nil {
+		return errors.New("ssh: no key found")
+	}
+	r, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	if err != nil {
+		return err
+	}
+	k.keys = append(k.keys, r)
+	return nil
+}
+
+// expanduser
+func expanduser(path string) string {
+	usr, _ := user.Current()
+	home := usr.HomeDir
+	if path[:1] == "~" {
+		path = strings.Replace(path, "~", home, 1)
+	}
+	return path
 }
 
 // A method for the construction of the configuration
@@ -42,11 +106,14 @@ func (s *Session) NewConfig(
 	user *formatter.User,
 ) error {
 
+	k := new(keychain)
+	k.loadPEM(os.ExpandEnv(expanduser(user.Key)))
+
 	// Construct the configuration with password authentication
 	s.Config = &ssh.ClientConfig{
 		User: user.Name,
 		Auth: []ssh.ClientAuth{
-			ssh.ClientAuthPassword(clientPassword(user.Password)),
+			ssh.ClientAuthKeyring(k),
 		},
 	}
 
