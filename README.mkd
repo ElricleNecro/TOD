@@ -3,44 +3,57 @@ README
 
 Project:
 --------
-With this project, **TOD**, we want to propose a program which will dispatch a list of command on a list of machine.
+With this project, **TOD**, we want to propose a program which will dispatch
+a list of command on a list of machine.
 
-First, the program will check if the machine is reachable.
-Secondly, for each reachable machine, it will launch the associated command.
-Thirsty, for each command it has not reach the associated machine, it will launch it on the first available machine.
+First, the program will check if the machine is reachable. Secondly, for
+each reachable machine, it will launch the associated command. Thirsty, for
+each command it has not reach the associated machine, it will launch it on
+the first available machine.
 
 Principle:
 ----------
-This program allows to dispatch many commands into a given set of hosts, allowing
-to use the advantage of big networks of hosts to run easily multiple programs
-on them.
+This program allows to dispatch many commands into a given set of hosts,
+allowing to use the advantage of big networks of hosts to run easily
+multiple programs on them.
 
-Given a list of users (name,password) and their associated commands (because some
-commands just can be used by a given user), the program dispatch those commands
-on the given list of hosts in an equitable way. So no hosts is too loaded by
-jobs than an other. The program checks if the host in the list is available to
-run a command on it. If not, all the remaining charge of commands of this host
-is dispatched to the other hosts which are connected(available). **TOD** ends only
-when all commands to be executed are done.
+Given a list of users (name,password) and their associated commands (because
+some commands just can be used by a given user), the program dispatch those
+commands on the given list of hosts in an equitable way. So no hosts is too
+loaded by jobs than an other. The program checks if the host in the list is
+available to run a command on it. If not, all the remaining charge of
+commands of this host is dispatched to the other hosts which are
+connected(available). **TOD** ends only when all commands to be executed are
+done.
 
 Description:
 ------------
 
 New features:
 -------------
+* v1.3.2:
+    * The plain text password authentication has been replaced by a private
+      key authentication, more secure. So, if you want to use **TOD**, you
+      will need to set up a private key for your machine, send the public
+      key to the server or hosts on which you want to connect, and then set
+      the path to the private key in the `private_key` field of the user
+      configuration file.
 * v1.3.1:
-    * Hosts on which some people are already being using the machines can be discarded
-    by setting the exclude_loaded option and putting other values for maximal memory
-    and cpu in the hosts with memory_max and cpu_max options.
-    * A timer can be set with work_timer to display a summary of working hosts
-    and their commands being executed, with a time step defined by work_timer_step.
-    * A maximal number of hosts to be used simultaneously can be set with the
-    hosts_max option. If the number is negative (default -1), all hosts specified
-    will be used.
+    * Hosts on which some people are already being using the machines can be
+      discarded by setting the exclude_loaded option and putting other
+      values for maximal memory and cpu in the hosts with memory_max and
+      cpu_max options.
+    * A timer can be set with work_timer to display a summary of working
+      hosts and their commands being executed, with a time step defined by
+      work_timer_step.
+    * A maximal number of hosts to be used simultaneously can be set with
+      the hosts_max option. If the number is negative (default -1), all
+      hosts specified will be used.
 * v1.3:
-    * After the run of the program, a summary of commands executed on each hosts is displayed.
-    * The charge of commands on one host is distributed in priority to low loaded hosts when
-    this host is disconnected.
+    * After the run of the program, a summary of commands executed on each
+      hosts is displayed.
+    * The charge of commands on one host is distributed in priority to low
+      loaded hosts when this host is disconnected.
 
 Installation:
 -------------
@@ -54,18 +67,18 @@ $ TOD -users <user_file> -hosts <hosts_file>
 ```
 to get a first idea of the dispatch.
 
-In case of lists of hosts in the standard input, you must pass the -stdin option
-and the list of hosts in STDIN must be in the format:
+In case of lists of hosts in the standard input, you must pass the -stdin
+option and the list of hosts in STDIN must be in the format:
 ```
 alpha|beta|delta
 ```
 
-A more complete and useful example is the following.
-You have a file in which the hosts you want to use are in a column format *hosts.file*.
-You want to have informations on running hosts and exclude hosts already working,
-and that the output of commands doesn't be displayed on the terminal.
-The informations on commands and users running them are stored in the YAML format
-in *users.yaml*. The following command will do the job:
+A more complete and useful example is the following. You have a file in
+which the hosts you want to use are in a column format *hosts.file*. You
+want to have informations on running hosts and exclude hosts already
+working, and that the output of commands doesn't be displayed on the
+terminal. The informations on commands and users running them are stored in
+the YAML format in *users.yaml*. The following command will do the job:
 ```
 $ X=$(cat hosts.file | tr -s "\n" "|") ; echo "${X%?}" | TOD -users users.yaml -stdin -no_results -exclude_loaded -work_timer
 ```
@@ -78,35 +91,48 @@ by
 ```
 $ echo "${X%?}"
 ```
-which is due to the last new line in the *hosts.file*. Then the list is piped
-to **TOD** with *-stdin* option. The other options allow to not display command's results,
-exclude loaded hosts and set a summary of running hosts all three minutes.
+which is due to the last new line in the *hosts.file*. Then the list is
+piped to **TOD** with *-stdin* option. The other options allow to not
+display command's results, exclude loaded hosts and set a summary of running
+hosts all three minutes.
 
 Options:
 --------
 You can set some default parameters on the command line:
 
 ```
--cpu_max: the maximal percent of the CPU to be used in the host to exclude it (default 25%).
--exclude_loaded: if set, the program will exclude hosts which are too loaded according to
-    the values of the cpu_max and memory_max parameters. The jobs associated to
-    this host will be dispatched to other not loaded hosts.
--hosts: the path to the YAML format file where hosts and there properties are stored.
--hosts_max: the maximal number of hosts to use to dispatch the command. No more
-    hosts than this number will be used simultaneously (default -1: all hosts are used).
--log_command: the path to the the directory where to put logs of commands output (default /tmp).
--memory_max: the maximal percent of memory to be used in the host to exclude it (default 30%).
--no_results: if set, the output of commands isn't displayed on the standard output.
--port : the port number on which the hosts are listening for a SSH connection by default (default 22).
--protocol : the default protocol used by hosts by default ("tcp","udp","tcp4"...) (default tcp)
--stdin: if set, reads the list of hosts from the standard input with hosts names separated by
-    the character |. The -hosts option can be omitted in this case (set it do nothing).
--timeout: the time in seconds after which the host is disconnected (default 10).
--users: the path to the YAML format file where users and the command associated are set.
--work_timer: if set, a timer will be launched to display a summary of working
-    hosts, in a step defined by work_timer_step.
-    Useful when running it on tmux, or screen and we don't want to go up to see where we are.
--work_timer_step: the value of the time step to display hosts informations in seconds (default 180).
+-cpu_max: the maximal percent of the CPU to be used in the host to exclude
+it (default 25%).
+-exclude_loaded: if set, the program will exclude hosts which are too loaded
+according to the values of the cpu_max and memory_max parameters. The jobs
+associated to this host will be dispatched to other not loaded hosts.
+-hosts: the path to the YAML format file where hosts and there properties
+are stored.
+-hosts_max: the maximal number of hosts to use to dispatch the command. No
+more hosts than this number will be used simultaneously (default -1: all
+hosts are used).
+-log_command: the path to the the directory where to put logs of commands
+output (default /tmp).
+-memory_max: the maximal percent of memory to be used in the host to exclude
+it (default 30%).
+-no_results: if set, the output of commands isn't displayed on the standard
+output.
+-port : the port number on which the hosts are listening for a SSH
+connection by default (default 22).
+-protocol : the default protocol used by hosts by default
+("tcp","udp","tcp4"...) (default tcp)
+-stdin: if set, reads the list of hosts from the standard input with hosts
+names separated by the character |. The -hosts option can be omitted in this
+case (set it do nothing).
+-timeout: the time in seconds after which the host is disconnected (default
+10).
+-users: the path to the YAML format file where users and the command
+associated are set.
+-work_timer: if set, a timer will be launched to display a summary of
+working hosts, in a step defined by work_timer_step. Useful when running it
+on tmux, or screen and we don't want to go up to see where we are.
+-work_timer_step: the value of the time step to display hosts informations
+in seconds (default 180).
 ```
 
 Users file:
@@ -115,16 +141,16 @@ The structure of the user file is in YAML format.
 For example to run commands on hosts as user PERCEVAL:
 ```
 PERCEVAL:
-    password: sloubi
-    commands: [ hostname, whoami ]
+    private_key: "path/to/private_key"
+    commands: [ /usr/bin/hostname, /usr/bin/whoami ]
 ```
 For multiple users, chained this type of block.
 ```
 PERCEVAL:
-    password: sloubi
+    private_key: "path/to/sloubi"
     commands: [ hostname, whoami ]
 ARTHUR:
-    password: graal
+    private_key: "path/to/graal"
     commands: ["echo \"Ne m'appelez pas Sir!\""]
 ```
 
@@ -142,3 +168,7 @@ beta:
 delta:
     threads: 2
 ```
+
+Use it only if you need to pass more specific informations than allowed by
+the `stdin` reader, such as priority, or protocol for communication, special
+ports... Currently the `threads` option do nothing.
