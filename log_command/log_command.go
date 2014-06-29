@@ -1,7 +1,7 @@
 package log_command
 
 import (
-	"io/ioutil"
+	"os"
 	"strconv"
 
 	"github.com/ElricleNecro/TOD/configuration"
@@ -26,11 +26,19 @@ func WriteLogCommand(
 	content := command + "\n" + output
 
 	// open the file
-	err := ioutil.WriteFile(
-		filename,
-		[]byte(content),
-		0666,
-	)
+	f, err := os.Create(filename)
+
+	// defer the close
+	defer func() {
+		if err := f.Close(); err != nil {
+			formatter.ColoredPrintln(
+				formatter.Red,
+				false,
+				"The file "+filename+" can't be closed!\n"+
+					"Reason is: "+err.Error(),
+			)
+		}
+	}()
 
 	// error
 	if err != nil {
@@ -41,4 +49,8 @@ func WriteLogCommand(
 				"Reason is: "+err.Error(),
 		)
 	}
+
+	// write the content in the file
+	f.WriteString(content)
+
 }
