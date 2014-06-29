@@ -3,6 +3,8 @@ package configuration
 import (
 	"io/ioutil"
 
+	"github.com/ElricleNecro/TOD/formatter"
+
 	"launchpad.net/goyaml"
 )
 
@@ -38,10 +40,53 @@ func ReadUsersYAML(
 
 	// Check error when reading the file
 	if err != nil {
-		panic(err)
+		formatter.ColoredPrintln(
+			formatter.Red,
+			false,
+			"The file "+filename+" can't be read for accessing"+
+				"the YAML structure!\n"+
+				"Reason is: "+err.Error(),
+		)
+		return nil
 	}
 
 	// return the structured file and data
 	return t
+
+}
+
+// This function converts users structure from the configuration file into
+// the structure used by the dispatcher.
+func UsersToDispatcher(users Users) []*formatter.Command {
+
+	// init the command slice
+	commands := make([]*formatter.Command, 0)
+
+	// loop over users
+	for username, fields := range users {
+
+		// create an user structure
+		user := &formatter.User{
+			Name:     username,
+			Key:      fields.Key,
+			Identity: 0,
+		}
+
+		// loop over commands
+		for _, command := range fields.Commands {
+
+			commands = append(
+				commands,
+				&formatter.Command{
+					Command: command,
+					User:    user,
+				},
+			)
+
+		}
+	}
+
+	// returns the list of commands
+	return commands
 
 }

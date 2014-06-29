@@ -92,8 +92,30 @@ func (k *keychain) loadPEM(file string) error {
 
 // expanduser
 func expanduser(path string) string {
-	usr, _ := user.Current()
-	home := usr.HomeDir
+
+	var home string
+
+	// get the current user
+	if usr, err := user.Current(); err == nil {
+
+		// get the home directory of the current user
+		home = usr.HomeDir
+	} else {
+
+		// an error occurred, fallback to the home variable
+		home = os.ExpandEnv("$HOME")
+	}
+
+	// check the path in input
+	if len(path) < 1 {
+		formatter.ColoredPrintln(
+			formatter.Red,
+			false,
+			"The length of the path isn't sufficient!",
+		)
+	}
+
+	// replace the tilde by home
 	if path[:1] == "~" {
 		path = strings.Replace(path, "~", home, 1)
 	}
@@ -182,7 +204,13 @@ func (s *Session) AddSession() (*ssh.Session, error) {
 
 	// append the session to the list
 	if err != nil {
-		panic("Failed to create the session to the host !")
+		formatter.ColoredPrintln(
+			formatter.Red,
+			false,
+			"Failed to create the session to the host!\n"+
+				"Reason is: "+err.Error(),
+		)
+		return nil, nil
 	} else {
 		s.Session = append(s.Session, session)
 		s.nsessions++

@@ -1,9 +1,11 @@
 package log_command
 
 import (
-	"github.com/ElricleNecro/TOD/configuration"
 	"io/ioutil"
 	"strconv"
+
+	"github.com/ElricleNecro/TOD/configuration"
+	"github.com/ElricleNecro/TOD/formatter"
 )
 
 // Functions to write the results of command into a log file in a given
@@ -32,6 +34,11 @@ func WriteLogCommand(
 
 	// error
 	if err != nil {
-		panic(err)
+		formatter.ColoredPrintln(
+			formatter.Red,
+			false,
+			"The file "+filename+" can't be open for logging!\n"+
+				"Reason is: "+err.Error(),
+		)
 	}
 }

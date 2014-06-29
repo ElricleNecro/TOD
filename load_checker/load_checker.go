@@ -1,10 +1,11 @@
 package load_checker
 
 import (
-	"github.com/ElricleNecro/TOD/commands"
-	"github.com/ElricleNecro/TOD/formatter"
 	"strconv"
 	"strings"
+
+	"github.com/ElricleNecro/TOD/commands"
+	"github.com/ElricleNecro/TOD/formatter"
 )
 
 // Function to check if the host is too loaded and to dispplay message and
@@ -151,7 +152,7 @@ func GetCPUMemory(
 
 	// check can connect
 	if err != nil {
-		return [2]float64{}, err
+		return [2]float64{0., 0.}, err
 	}
 
 	// return the slice of CPU and memory.

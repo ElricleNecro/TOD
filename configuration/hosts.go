@@ -2,9 +2,11 @@ package configuration
 
 import (
 	"io/ioutil"
-	"launchpad.net/goyaml"
 	"os"
 	"strings"
+
+	"github.com/ElricleNecro/TOD/formatter"
+	"launchpad.net/goyaml"
 )
 
 // A type defining the user structure in the YAML file which we need
@@ -71,10 +73,49 @@ func ReadHostsYAML(
 
 	// Check error when reading the file
 	if err != nil {
-		panic(err)
+		formatter.ColoredPrintln(
+			formatter.Red,
+			false,
+			"The file "+filename+" can't be read for accessing"+
+				"the YAML structure!\n"+
+				"Reason is: "+err.Error(),
+		)
+		return nil
 	}
 
 	// return the structured file and data
 	return t
+
+}
+
+// This function converts the dictionary of hosts to the structure needed
+// by the dispatcher.
+func HostsToDispatcher(hosts Hosts) []*formatter.Host {
+
+	// init the hosts for output
+	myhosts := make([]*formatter.Host, 0)
+
+	// loop over elements in the map
+	for hostname, fields := range hosts {
+
+		// new channel
+		channel := make(chan int)
+
+		// create a host object
+		host := &formatter.Host{
+			Hostname:    hostname,
+			Port:        fields.Port,
+			Protocol:    fields.Protocol,
+			IsConnected: true,
+			IsWorking:   false,
+			Waiter:      &channel,
+		}
+
+		// append to hosts
+		myhosts = append(myhosts, host)
+
+	}
+
+	return myhosts
 
 }

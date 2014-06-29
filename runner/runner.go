@@ -24,8 +24,8 @@ func Run() {
 	users_config := configuration.ReadUsersYAML(data_config.Users)
 
 	// convert those data to dispatcher data
-	hosts := formatter.HostsToDispatcher(*hosts_config)
-	commands := formatter.UsersToDispatcher(*users_config)
+	hosts := configuration.HostsToDispatcher(*hosts_config)
+	commands := configuration.UsersToDispatcher(*users_config)
 
 	// Dispatch commands on hosts for the first time
 	formatter.Dispatcher(
