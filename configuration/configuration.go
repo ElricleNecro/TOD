@@ -51,6 +51,22 @@ type Config struct {
 	HostsMax int
 }
 
+func (c *Config) GetCPUMax() float64 {
+	return c.CPUMax
+}
+
+func (c *Config) GetMemoryMax() float64 {
+	return c.MemoryMax
+}
+
+func (c *Config) GetTimer() int {
+	return c.WorkTime
+}
+
+func (c *Config) GetLogCommand() string {
+	return c.LogCommand
+}
+
 // A function to get the data from the command line
 // and store it correctly in the datastructure.
 func ReadConfig() *Config {

@@ -1,25 +1,62 @@
-package log_command
+package tools
 
 import (
 	"os"
+	"os/user"
 	"strconv"
+	"strings"
 
-	"github.com/ElricleNecro/TOD/configuration"
 	"github.com/ElricleNecro/TOD/formatter"
 )
+
+type config interface {
+	GetLogCommand() string
+}
+
+// expanduser
+func Expanduser(path string) string {
+
+	var home string
+
+	// get the current user
+	if usr, err := user.Current(); err == nil {
+
+		// get the home directory of the current user
+		home = usr.HomeDir
+	} else {
+
+		// an error occurred, fallback to the home variable
+		home = os.ExpandEnv("$HOME")
+	}
+
+	// check the path in input
+	if len(path) < 1 {
+		formatter.ColoredPrintln(
+			formatter.Red,
+			false,
+			"The length of the path isn't sufficient!",
+		)
+	}
+
+	// replace the tilde by home
+	if path[:1] == "~" {
+		path = strings.Replace(path, "~", home, 1)
+	}
+	return path
+}
 
 // Functions to write the results of command into a log file in a given
 // directory specified in argument of the program with the option -log_command.
 func WriteLogCommand(
 	output string,
-	config *configuration.Config,
+	config config,
 	hostname string,
 	command string,
 	number int,
 ) {
 
 	// Create the file name with hostname and the number of the command
-	filename := config.LogCommand + "/" +
+	filename := config.GetLogCommand() + "/" +
 		hostname + strconv.Itoa(number) + ".log"
 
 	// content of the file

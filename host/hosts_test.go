@@ -1,8 +1,10 @@
-package formatter
+package host
 
 import (
 	"fmt"
 	"testing"
+
+	"github.com/ElricleNecro/TOD/commands"
 )
 
 func TestDispatcher(t *testing.T) {
@@ -43,11 +45,11 @@ func TestDispatcher(t *testing.T) {
 			IsConnected: true,
 		}
 	}
-	commands := make([]*Command, len(mycommands))
+	commands := make([]*commands.Command, len(mycommands))
 	for i, command := range mycommands {
 
 		// Create a part of the Command object
-		commands[i] = &Command{
+		commands[i] = &commands.Command{
 			Command: command,
 		}
 	}
@@ -56,9 +58,10 @@ func TestDispatcher(t *testing.T) {
 	t.Log("Setting data for test done!")
 
 	// Dispatch commands to hosts
-	Dispatcher(
+	hosts.Dispatcher(
 		commands,
-		hosts,
+		10,
+		true,
 	)
 
 	// display

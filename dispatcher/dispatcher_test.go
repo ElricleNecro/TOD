@@ -1,11 +1,13 @@
-package exec
+package dispatcher
 
 import (
 	myusr "os/user"
 	"testing"
 
-	config "github.com/ElricleNecro/TOD/configuration"
+	"github.com/ElricleNecro/TOD/commands"
+	"github.com/ElricleNecro/TOD/configuration"
 	"github.com/ElricleNecro/TOD/formatter"
+	"github.com/ElricleNecro/TOD/host"
 )
 
 var (
@@ -38,22 +40,12 @@ var (
 // To test the run of commands.
 func TestRunCommands(t *testing.T) {
 
-	var user *formatter.User
-
 	// Read the user structure from the test file
 	usr, _ := myusr.Current()
-	users := config.ReadUsersYAML(usr.HomeDir + "/CONFIG/TOD/users/users.yaml")
-	for myuser, fields := range *users {
-
-		user = &formatter.User{
-			Name:     myuser,
-			Identity: 1,
-			Key:      fields.Key,
-		}
-	}
+	users := configuration.ReadUsersYAML(usr.HomeDir + "/CONFIG/TOD/users/users.yaml")
 
 	// configuration
-	conf := &config.Config{}
+	conf := &configuration.Config{}
 	conf.Port = 22
 	conf.Protocol = "tcp"
 	conf.Timeout = 10
@@ -64,42 +56,41 @@ func TestRunCommands(t *testing.T) {
 	conf.WorkTimer = true
 	conf.WorkTime = 120
 	conf.HostsMax = 5
+	conf.Stdin = true
 
-	// Create a command which will be duplicated
-	command := &formatter.Command{
-		Command: "sleep $(( RANDOM % 10 )) && /bin/hostname",
-		User:    user,
-	}
-	commands := make([]*formatter.Command, 121)
-	for i, _ := range commands {
-		commands[i] = command
+	// read command from the example configuration
+	cmds := configuration.UsersToDispatcher(*users)
+
+	// replicate the command in the example
+	commands := make([]commands.Command, 121)
+	for i := range commands {
+		commands[i] = cmds[0]
 	}
 
 	// Create the list of commands and hosts
-	hosts := make([]*formatter.Host, len(hostnames))
-	for i, host := range hostnames {
-
-		// new channel
-		channel := make(chan int)
-
+	hsts := new(host.Hosts)
+	hosts := make([]*host.Host, len(hostnames))
+	for i, hst := range hostnames {
 		// Create the host object in the slice
-		hosts[i] = &formatter.Host{
-			Hostname:    host,
-			Port:        22,
-			Protocol:    "tcp",
-			IsConnected: true,
-			Waiter:      &channel,
+		hosts[i] = &host.Host{
+			Hostname: hst,
 		}
-
 	}
+	hsts.Hosts = hosts
 
 	// display
-	formatter.ColoredPrintln(formatter.Blue, false, "All data initialized !")
+	formatter.ColoredPrintln(
+		formatter.Blue,
+		false,
+		"All data initialized !",
+	)
+
+	// Create dispatcher
+	dispatcher := New(conf, hsts)
 
 	// Dispatch commands on hosts
-	formatter.Dispatcher(
+	hsts.Dispatcher(
 		commands,
-		hosts,
 		conf.HostsMax,
 		true,
 	)
@@ -112,9 +103,12 @@ func TestRunCommands(t *testing.T) {
 	)
 
 	// Run commands in concurrent
-	RunCommands(hosts, len(commands), conf)
+	dispatcher.RunCommands(len(commands))
 
 	// display
-	formatter.ColoredPrintln(formatter.Blue, false, "Commands done !")
-
+	formatter.ColoredPrintln(
+		formatter.Blue,
+		false,
+		"Commands done !",
+	)
 }

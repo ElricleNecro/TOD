@@ -1,4 +1,4 @@
-package load_checker
+package host
 
 import (
 	"strconv"

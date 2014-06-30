@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/ElricleNecro/TOD/formatter"
+	"github.com/ElricleNecro/TOD/host"
 	"launchpad.net/goyaml"
 )
 
@@ -16,6 +17,7 @@ type MyHosts struct {
 	Priority int    "priority"
 	Threads  int    "threads"
 	Protocol string "protocol"
+	Timeout  int    "timeout"
 }
 
 // The map type passed to the read YAML procedure to get multiple users
@@ -90,32 +92,28 @@ func ReadHostsYAML(
 
 // This function converts the dictionary of hosts to the structure needed
 // by the dispatcher.
-func HostsToDispatcher(hosts Hosts) []*formatter.Host {
+func HostsToDispatcher(hosts Hosts) *host.Hosts {
 
 	// init the hosts for output
-	myhosts := make([]*formatter.Host, 0)
+	hst := new(host.Hosts)
+	myhosts := make([]*host.Host, 0)
 
 	// loop over elements in the map
 	for hostname, fields := range hosts {
 
-		// new channel
-		channel := make(chan int)
-
 		// create a host object
-		host := &formatter.Host{
-			Hostname:    hostname,
-			Port:        fields.Port,
-			Protocol:    fields.Protocol,
-			IsConnected: true,
-			IsWorking:   false,
-			Waiter:      &channel,
+		host := &host.Host{
+			Hostname: hostname,
+			Port:     fields.Port,
+			Protocol: fields.Protocol,
+			Timeout:  fields.Timeout,
 		}
 
 		// append to hosts
 		myhosts = append(myhosts, host)
-
 	}
 
-	return myhosts
+	hst.Hosts = myhosts
 
+	return hst
 }

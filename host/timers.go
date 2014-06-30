@@ -1,13 +1,14 @@
-package timers
+package host
 
 import (
-	"github.com/ElricleNecro/TOD/formatter"
 	"strconv"
 	"time"
+
+	"github.com/ElricleNecro/TOD/formatter"
 )
 
 // The function timer which displays results all three minutes
-func WorkingTimer(hosts []*formatter.Host, step int) {
+func (hosts *Hosts) WorkingTimer(step int) {
 
 	// set a timer
 	timer := time.NewTicker(time.Duration(step) * time.Second)
@@ -19,31 +20,31 @@ func WorkingTimer(hosts []*formatter.Host, step int) {
 		<-timer.C
 
 		// get the current time
-		hour, minute, second := time.Now().Clock()
+
+		formatter.ColoredPrintln(
+			formatter.Magenta,
+			false,
+			"#################################################",
+		)
 		formatter.ColoredPrintln(
 			formatter.Blue,
 			false,
-			"At time",
-			strconv.Itoa(hour)+":"+
-				strconv.Itoa(minute)+":"+strconv.Itoa(second),
+			"At time ",
+			time.Now().Format("15:04:05"),
 		)
 
 		// display working hosts
-		DisplayWorkingHosts(hosts)
-
+		hosts.DisplayWorkingHosts()
 	}
-
 }
 
 // A routine to check the hosts which are executing commands at this time
-func DisplayWorkingHosts(hosts []*formatter.Host) {
+func (hosts *Hosts) DisplayWorkingHosts() {
 
 	// loop over hosts
-	for _, host := range hosts {
-
+	for _, host := range hosts.Hosts {
 		// if the host is connected and is marked as executing command
-		if host.IsConnected && host.IsWorking {
-
+		if host.Connected && host.IsWorking {
 			// Display the name of the host and the command being executed
 			formatter.ColoredPrintln(
 				formatter.Blue,
@@ -58,7 +59,6 @@ func DisplayWorkingHosts(hosts []*formatter.Host) {
 				strconv.Itoa(host.CommandNumber)+"/"+
 					strconv.Itoa(len(host.Commands)),
 			)
-
 		}
 	}
 }

@@ -3,7 +3,9 @@ package configuration
 import (
 	"io/ioutil"
 
+	"github.com/ElricleNecro/TOD/commands"
 	"github.com/ElricleNecro/TOD/formatter"
+	"github.com/ElricleNecro/TOD/user"
 
 	"launchpad.net/goyaml"
 )
@@ -57,36 +59,32 @@ func ReadUsersYAML(
 
 // This function converts users structure from the configuration file into
 // the structure used by the dispatcher.
-func UsersToDispatcher(users Users) []*formatter.Command {
+func UsersToDispatcher(users Users) []commands.Command {
 
 	// init the command slice
-	commands := make([]*formatter.Command, 0)
+	cmds := make([]commands.Command, 0)
 
 	// loop over users
 	for username, fields := range users {
 
 		// create an user structure
-		user := &formatter.User{
-			Name:     username,
-			Key:      fields.Key,
-			Identity: 0,
+		user := &user.User{
+			Username:   username,
+			PrivateKey: fields.Key,
 		}
 
 		// loop over commands
 		for _, command := range fields.Commands {
-
-			commands = append(
-				commands,
-				&formatter.Command{
+			cmds = append(
+				cmds,
+				commands.Command{
 					Command: command,
 					User:    user,
 				},
 			)
-
 		}
 	}
 
 	// returns the list of commands
-	return commands
-
+	return cmds
 }
