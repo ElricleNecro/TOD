@@ -82,10 +82,13 @@ func (host *Host) IsConnected() (bool, error) {
 	}
 
 	// Contact the host and if no error, it is connected
-	_, err := dial.Dial(
+	conn, err := dial.Dial(
 		host.Protocol,
 		net.JoinHostPort(host.Hostname, strconv.Itoa(host.Port)),
 	)
+	if err == nil {
+		conn.Close()
+	}
 
 	return err == nil, err
 }
@@ -103,6 +106,8 @@ func (host *Host) CreateSession(user user) (string, error) {
 
 	// create a session object
 	host.session, err = ssh.New(user)
+
+	// check errors at the creation
 	if err != nil {
 		return "The session for the connection can't be created!\n" +
 			"Reason is: " + err.Error(), err
@@ -126,9 +131,9 @@ func (host *Host) CreateSession(user user) (string, error) {
 	}
 
 	// add a session to connect to host
-	_, err = host.session.AddSession()
+	err = host.session.AddSession()
 	if err != nil {
-		// Close the session
+		// close the session
 		host.session.Close()
 
 		// exit the loop
@@ -144,10 +149,17 @@ func (host *Host) OneCommand(command *commands.Command) (string, error) {
 
 	// create a new session for the host
 	message, err := host.CreateSession(command.User)
+	defer func() {
+		err := host.session.Close()
+		if err != nil {
+			return
+		}
+	}()
+
+	// check error at the create of the session
 	if err != nil {
 		return message, err
 	}
-	defer host.session.Close()
 
 	// execute the command on the host
 	output, err := host.session.Run(command.Command)
