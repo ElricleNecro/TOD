@@ -2,6 +2,7 @@ package ssh
 
 import (
 	"bytes"
+	"io"
 	"net"
 	"os"
 	"strconv"
@@ -18,11 +19,10 @@ type Session struct {
 	Config *ssh.ClientConfig
 
 	// The structure of the client
-	Client *ssh.ClientConn
+	Client *ssh.Client
 
 	// The structure of the session and their number
-	Session   []*ssh.Session
-	nsessions int
+	Session *ssh.Session
 }
 
 type user interface {
@@ -49,28 +49,82 @@ func New(user user) (*Session, error) {
 		return nil, err
 	}
 
-	// init the number of sessions
-	session.nsessions = 0
-
 	// return the session
 	return session, nil
+}
+
+// load a private key
+func loadPEM(file string) ([]byte, error) {
+
+	// open the file
+	f, err := os.Open(file)
+	defer func() {
+		err := f.Close()
+		if err != nil {
+			formatter.ColoredPrintln(
+				formatter.Red,
+				false,
+				"The file can't be closed for the private key!\n",
+				"Reason is: ", err.Error(),
+			)
+		}
+	}()
+
+	// check errors when opening
+	if err != nil {
+		return nil, err
+	}
+
+	// read data
+	buf := bytes.NewBuffer(nil)
+	_, err = io.Copy(buf, f)
+	if err != nil {
+		return nil, err
+	}
+
+	// parse private keys
+	return buf.Bytes(), nil
 }
 
 // A method for the construction of the configuration
 // object necessary for the connection to the host.
 func (s *Session) NewConfig(user user) error {
 
-	k := new(keychain)
-	err := k.loadPEM(os.ExpandEnv(tools.Expanduser(user.GetPrivateKey())))
+	// get the content of the private key file
+	key, err := loadPEM(os.ExpandEnv(tools.Expanduser(user.GetPrivateKey())))
 	if err != nil {
 		return err
+	}
+
+	// parse the key
+	parsed, err := ssh.ParseRawPrivateKey(key)
+	if err != nil {
+		formatter.ColoredPrintln(
+			formatter.Red,
+			false,
+			"Can't parse the private key!\n",
+			"Reason is: ", err.Error(),
+		)
+
+	}
+
+	// convert into signer
+	signer, err := ssh.NewSignerFromKey(parsed)
+	if err != nil {
+		formatter.ColoredPrintln(
+			formatter.Red,
+			false,
+			"Can't create signer from private key!\n",
+			"Reason is: ", err.Error(),
+		)
+
 	}
 
 	// Construct the configuration with password authentication
 	s.Config = &ssh.ClientConfig{
 		User: user.GetUsername(),
-		Auth: []ssh.ClientAuth{
-			ssh.ClientAuthKeyring(k),
+		Auth: []ssh.AuthMethod{
+			ssh.PublicKeys(signer),
 		},
 	}
 
@@ -94,7 +148,6 @@ func (s *Session) Connect(host host) error {
 	)
 
 	return err
-
 }
 
 // Function to add a session to the connection to the host.
@@ -105,7 +158,7 @@ func (s *Session) Connect(host host) error {
 // TODO: Maybe add them into a dictionary in order to allow to
 // use a name for retrieving the session as in tmux, etc... just by
 // typing a name.
-func (s *Session) AddSession() (*ssh.Session, error) {
+func (s *Session) AddSession() error {
 
 	// create the session
 	session, err := s.Client.NewSession()
@@ -118,24 +171,28 @@ func (s *Session) AddSession() (*ssh.Session, error) {
 			"Failed to create the session to the host!\n"+
 				"Reason is: "+err.Error(),
 		)
-		return nil, nil
+		return nil
 	} else {
-		s.Session = append(s.Session, session)
-		s.nsessions++
+		s.Session = session
 	}
 
 	// return the result
-	return session, err
-
+	return err
 }
 
 // Close the last session created in the list.
 func (s *Session) Close() error {
-
 	// Close the session
-	s.Session[s.nsessions-1].Close()
-
-	// return
+	if s.Session != nil {
+		err := s.Session.Close()
+		if err != nil {
+			return err
+		}
+	}
+	if s.Client != nil {
+		err := s.Client.Close()
+		return err
+	}
 	return nil
 }
 
@@ -147,14 +204,11 @@ func (s *Session) Run(command string) (string, error) {
 	// to return the output of the command
 	var b bytes.Buffer
 
-	// get the good session
-	session := s.Session[s.nsessions-1]
-
 	// Affect the output to the buffer
-	session.Stdout = &b
+	s.Session.Stdout = &b
 
 	// run the command on the host
-	err := session.Run(command)
+	err := s.Session.Run(command)
 
 	// return the output and the error if one present
 	return b.String(), err

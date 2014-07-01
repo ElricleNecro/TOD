@@ -126,17 +126,16 @@ func TestAddSession(t *testing.T) {
 	t.Log("Connection done!")
 
 	// Run a command for test
-	_, err2 := session.AddSession()
+	err = session.AddSession()
 
 	// test
-	if err2 != nil {
+	if err != nil {
 		t.Errorf("Can't add a session to the connected host!\n" + err.Error())
 		t.FailNow()
 	}
 
 	// display
 	t.Log("All done to add sessions!")
-
 }
 
 func TestRun(t *testing.T) {
@@ -179,10 +178,10 @@ func TestRun(t *testing.T) {
 	t.Log("Connection done!")
 
 	// Run a command for test
-	_, err2 := session.AddSession()
+	err = session.AddSession()
 
 	// test
-	if err2 != nil {
+	if err != nil {
 		t.Errorf("Can't add a session to the connected host!\n" + err.Error())
 		t.FailNow()
 	}
